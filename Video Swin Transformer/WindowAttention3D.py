@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Dropout
 import numpy as np
 
-class WindowAttention3D(tf.keras.layers.Layer):
+class WindowAttention3D_tf(tf.keras.layers.Layer):
     def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.):
         super().__init__()
         self.dim = dim
@@ -19,7 +19,7 @@ class WindowAttention3D(tf.keras.layers.Layer):
 
 
     def build(self, input_shape):
-        self.relative_position_bias_table = self.add_weight(shape=((2 * self.window_size[0] - 1) * (2 * self.window_size[1] - 1)* (2 * window_size[2] - 1), self.num_heads),
+        self.relative_position_bias_table = self.add_weight(shape=((2 * self.window_size[0] - 1) * (2 * self.window_size[1] - 1)* (2 * self.window_size[2] - 1), self.num_heads),
                                                             initializer=tf.initializers.Zeros(), trainable=True) # 2*Wd-1 * 2*Wh-1 * 2*Ww-1, nH
 
         coords_d = np.arange(self.window_size[0])
@@ -45,6 +45,7 @@ class WindowAttention3D(tf.keras.layers.Layer):
 
 
     def call(self, x, mask=None):
+        print(x.shape, "attention")
         B_, N, C = x.get_shape().as_list()
         qkv = tf.transpose(tf.reshape(self.qkv(
             x), shape=[-1, N, 3, self.num_heads, C // self.num_heads]), perm=[2, 0, 3, 1, 4])

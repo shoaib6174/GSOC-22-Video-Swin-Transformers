@@ -9,13 +9,6 @@ class PatchMerging(tf.keras.layers.Layer):
         self.reduction = Dense(2 * dim, use_bias=False,  activation=None)
         self.norm = norm_layer(epsilon=1e-5)
         
-    # def set_weight(self):
-    #     self.reduction.set_weights([np.transpose(self.weight)])
-    #     print("\n\ntf weights\n", np.transpose(self.reduction.get_weights()[0]))
-
-    def build(self, input_shapes):
-        self.reduction.set_weights([np.transpose(self.weight)])
-        self.build = True
 
     def call(self, x):
         B, D, H, W, C = x.shape
