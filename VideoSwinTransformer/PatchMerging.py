@@ -1,10 +1,9 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, LayerNormalization 
+from keras.layers import Dense, LayerNormalization 
 
 class PatchMerging(tf.keras.layers.Layer):
-    def __init__(self, dim,  weight, norm_layer=LayerNormalization):
+    def __init__(self, dim, norm_layer=LayerNormalization):
         super().__init__()
-        self.weight = weight
         self.dim = dim
         self.reduction = Dense(2 * dim, use_bias=False,  activation=None)
         self.norm = norm_layer(epsilon=1e-5)
@@ -16,7 +15,7 @@ class PatchMerging(tf.keras.layers.Layer):
         # padding
         pad_input = (H % 2 == 1) or (W % 2 == 1)
         if pad_input:
-            x = tf.pad(x_tf, [[0,0], [0,0], [0,H%2], [0,W%2], [0,0]])
+            x = tf.pad(x, [[0,0], [0,0], [0,H%2], [0,W%2], [0,0]])
 
         x0 = x[:, :, 0::2, 0::2, :]  # B D H/2 W/2 C
         x1 = x[:, :, 1::2, 0::2, :]  # B D H/2 W/2 C

@@ -1,13 +1,12 @@
-from tensorflow.keras.layers import Dropout , LayerNormalization
+from keras.layers import Dropout , LayerNormalization
 import tensorflow as tf
 import numpy as np
 from einops import rearrange
-import DropPath
+from DropPath import DropPath
 
-import  PatchMerging
-
-import BasicLayer
-import PatchEmbed3D_tf
+from PatchMerging import  PatchMerging
+from BasicLayer import BasicLayer
+from PatchEmbed3D import PatchEmbed3D
 
 
 class SwinTransformer3D(tf.keras.Model):
@@ -44,7 +43,7 @@ class SwinTransformer3D(tf.keras.Model):
 
 
         # split image into non-overlapping patches
-        self.patch_embed = PatchEmbed3D_tf(
+        self.patch_embed = PatchEmbed3D(
             patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
             norm_layer=norm_layer if self.patch_norm else None)
         
@@ -57,7 +56,7 @@ class SwinTransformer3D(tf.keras.Model):
         dpr = [x for x in np.linspace(0., drop_path_rate, sum(depths))] # stochastic depth decay rule
 
         # build layers
-        self.layers3D = [BasicLayer_tf(dim=int(embed_dim * 2 ** i_layer),
+        self.layers3D = [BasicLayer(dim=int(embed_dim * 2 ** i_layer),
                                                
                                                 depth=depths[i_layer],
                                                 num_heads=num_heads[i_layer],
@@ -68,7 +67,7 @@ class SwinTransformer3D(tf.keras.Model):
 
                                                 drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
                                                 norm_layer=norm_layer,
-                                                downsample=PatchMerging_tf if (
+                                                downsample=PatchMerging if (
                                                     i_layer < self.num_layers - 1) else None,
                                                 use_checkpoint=use_checkpoint) 
                             for i_layer in range(self.num_layers)]
@@ -100,8 +99,8 @@ class SwinTransformer3D(tf.keras.Model):
         x = self.pos_drop(x)
 
         for layer in self.layers3D:
-
             x = layer(x)
+            
         x = rearrange(x, 'n c d h w -> n d h w c') 
         x = self.norm(x)
         x = rearrange(x, 'n d h w c -> n c d h w')
@@ -110,7 +109,7 @@ class SwinTransformer3D(tf.keras.Model):
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""
-        super(SwinTransformer3D_tf, self).train(mode)
+        super(SwinTransformer3D, self).train(mode)
         self._freeze_stages()
 
 

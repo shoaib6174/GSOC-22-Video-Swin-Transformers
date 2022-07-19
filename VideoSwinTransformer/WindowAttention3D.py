@@ -1,8 +1,8 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout
 import numpy as np
 
-class WindowAttention3D_tf(tf.keras.layers.Layer):
+class WindowAttention3D(tf.keras.layers.Layer):
     def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.):
         super().__init__()
         self.dim = dim

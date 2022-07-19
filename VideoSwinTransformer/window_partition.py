@@ -2,7 +2,7 @@ import tensorflow as tf
 from functools import reduce
 
 
-def window_partition_tf(x, window_size):
+def window_partition(x, window_size):
     """
     Args:
         x: (B, D, H, W, C)

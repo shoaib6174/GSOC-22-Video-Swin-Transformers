@@ -1,15 +1,17 @@
 
 import tensorflow as tf
-
-from .WindowAttention3D import WindowAttention3D_tf
-from .DropPath import DropPath
-from .Mlp import Mlp_tf
-from .window_partition import window_partition_tf
-from .window_reverse import window_reverse_tf
-from .get_window_size import get_window_size
+from keras.layers import LayerNormalization
 
 
-class SwinTransformerBlock3D_tf(tf.keras.layers.Layer):
+from WindowAttention3D import WindowAttention3D
+from DropPath import DropPath
+from Mlp import Mlp
+from window_partition import window_partition
+from window_reverse import window_reverse
+from get_window_size import get_window_size
+
+
+class SwinTransformerBlock3D(tf.keras.layers.Layer):
     """ Swin Transformer Block.
     Args:
         dim (int): Number of input channels.
@@ -41,7 +43,7 @@ class SwinTransformerBlock3D_tf(tf.keras.layers.Layer):
         assert 0 <= self.shift_size[1] < self.window_size[1], "shift_size must in 0-window_size"
         assert 0 <= self.shift_size[2] < self.window_size[2], "shift_size must in 0-window_size"
         self.norm1 = norm_layer(axis=-1, epsilon=1e-5)
-        self.attn = WindowAttention3D_tf(
+        self.attn = WindowAttention3D(
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
         
@@ -49,7 +51,7 @@ class SwinTransformerBlock3D_tf(tf.keras.layers.Layer):
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp_tf(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
 
     def forward_part1(self, x, mask_matrix):
 
@@ -77,12 +79,12 @@ class SwinTransformerBlock3D_tf(tf.keras.layers.Layer):
             shifted_x = x
             attn_mask = None
         # partition windows
-        x_windows = window_partition_tf(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
+        x_windows = window_partition(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
         # W-MSA/SW-MSA
         attn_windows = self.attn(x_windows, mask=attn_mask)  # B*nW, Wd*Wh*Ww, C
         # merge windows
         attn_windows = tf.reshape( attn_windows ,  [-1, *(window_size+(C,))] )
-        shifted_x = window_reverse_tf(attn_windows, window_size, B, Dp, Hp, Wp)  # B D' H' W' C
+        shifted_x = window_reverse(attn_windows, window_size, B, Dp, Hp, Wp)  # B D' H' W' C
         # reverse cyclic shift
         if any(i > 0 for i in shift_size):
             x = tf.roll(shifted_x, shift=[shift_size[0], shift_size[1], shift_size[2]], axis=[1, 2, 3]) #?

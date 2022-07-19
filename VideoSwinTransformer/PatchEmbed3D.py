@@ -1,8 +1,8 @@
 import tensorflow as tf
-from tensorflow.keras.layers import  Conv3D
+from keras.layers import  Conv3D
+from einops import rearrange
 
-
-class PatchEmbed3D_tf(tf.keras.layers.Layer):
+class PatchEmbed3D(tf.keras.layers.Layer):
     def __init__(self, patch_size=(2, 4, 4), in_chans=3, embed_dim=96, norm_layer=None):
         super().__init__(name='patch_embed')
 
@@ -13,10 +13,10 @@ class PatchEmbed3D_tf(tf.keras.layers.Layer):
 
         
         self.proj = Conv3D(embed_dim, kernel_size=patch_size,
-                           strides=patch_size, name='proj', data_format = "channels_first")
+                           strides=patch_size, name='embed_proj')
         
         if norm_layer is not None:
-            self.norm = norm_layer(epsilon=1e-5, name='norm')
+            self.norm = norm_layer(epsilon=1e-5, name='embed_norm')
         else:
             self.norm = None
 
@@ -25,6 +25,8 @@ class PatchEmbed3D_tf(tf.keras.layers.Layer):
         ## padding
         print("embed in " , x.shape)
         x = self.proj(x)
+        x = rearrange(x, 'b d h w c -> b c d h w')
+
         
         if self.norm is not None:
           B, C, D, Wh, Ww = x.get_shape().as_list()

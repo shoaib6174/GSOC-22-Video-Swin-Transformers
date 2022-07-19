@@ -2,10 +2,11 @@ import tensorflow as tf
 from einops import rearrange
 import numpy as np
 from functools import  lru_cache
+from keras.layers import LayerNormalization
 
-from .SwinTransformerBlock3D import SwinTransformerBlock3D_tf
-from .get_window_size import get_window_size
-from .window_partition import window_partition_tf
+from SwinTransformerBlock3D import SwinTransformerBlock3D
+from get_window_size import get_window_size
+from window_partition import window_partition
 
 @lru_cache()
 def compute_mask(D, H, W, window_size, shift_size, device):
@@ -18,7 +19,7 @@ def compute_mask(D, H, W, window_size, shift_size, device):
             for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2],None):
                 img_mask[:, d, h, w, :] = cnt
                 cnt += 1
-    mask_windows = window_partition_tf(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
+    mask_windows = window_partition(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
     print(mask_windows.shape)
 
     mask_windows = tf.squeeze(mask_windows, axis = -1)  # nW, ws[0]*ws[1]*ws[2] ??
@@ -30,7 +31,7 @@ def compute_mask(D, H, W, window_size, shift_size, device):
     return attn_mask
 
 
-class BasicLayer_tf(tf.keras.layers.Layer):
+class BasicLayer(tf.keras.layers.Layer):
     """ A basic Swin Transformer layer for one stage.
     Args:
         dim (int): Number of feature channels
@@ -70,7 +71,7 @@ class BasicLayer_tf(tf.keras.layers.Layer):
         # build 
         self.block = []
         self.blocks = [
-            SwinTransformerBlock3D_tf(
+            SwinTransformerBlock3D(
                 dim=dim,
                 num_heads=num_heads,
                 window_size=window_size,
