@@ -23,7 +23,7 @@ class PatchEmbed3D(tf.keras.layers.Layer):
     def call(self, x):
         B, C, D, H, W = x.get_shape().as_list()
         ## padding
-        print("embed in " , x.shape)
+        # print("embed in " , x.shape)
         x = self.proj(x)
         x = rearrange(x, 'b d h w c -> b c d h w')
 
@@ -34,5 +34,5 @@ class PatchEmbed3D(tf.keras.layers.Layer):
           x = self.norm(x)
           x = tf.reshape(x, shape=[B, C, -1])
           x = tf.reshape(x, shape=[-1, self.embed_dim, D, Wh, Ww])
-        print("embed_out",x.get_shape())
+        # print("embed_out",x.get_shape())
         return x

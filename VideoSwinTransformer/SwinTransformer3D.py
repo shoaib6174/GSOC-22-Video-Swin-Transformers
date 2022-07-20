@@ -2,11 +2,11 @@ from keras.layers import Dropout , LayerNormalization
 import tensorflow as tf
 import numpy as np
 from einops import rearrange
-from DropPath import DropPath
+from .DropPath import DropPath
 
-from PatchMerging import  PatchMerging
-from BasicLayer import BasicLayer
-from PatchEmbed3D import PatchEmbed3D
+from .PatchMerging import  PatchMerging
+from .BasicLayer import BasicLayer
+from .PatchEmbed3D import PatchEmbed3D
 
 
 class SwinTransformer3D(tf.keras.Model):

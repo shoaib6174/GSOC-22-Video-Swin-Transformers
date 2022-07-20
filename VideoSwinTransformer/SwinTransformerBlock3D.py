@@ -3,12 +3,12 @@ import tensorflow as tf
 from keras.layers import LayerNormalization
 
 
-from WindowAttention3D import WindowAttention3D
-from DropPath import DropPath
-from Mlp import Mlp
-from window_partition import window_partition
-from window_reverse import window_reverse
-from get_window_size import get_window_size
+from .WindowAttention3D import WindowAttention3D
+from .DropPath import DropPath
+from .Mlp import Mlp
+from .window_partition import window_partition
+from .window_reverse import window_reverse
+from .get_window_size import get_window_size
 
 
 class SwinTransformerBlock3D(tf.keras.layers.Layer):
@@ -47,7 +47,7 @@ class SwinTransformerBlock3D(tf.keras.layers.Layer):
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
         
-        print("drop_path", drop_path)
+        # print("drop_path", drop_path)
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
         mlp_hidden_dim = int(dim * mlp_ratio)
@@ -55,10 +55,10 @@ class SwinTransformerBlock3D(tf.keras.layers.Layer):
 
     def forward_part1(self, x, mask_matrix):
 
-        print('forward1')
+        # print('forward1')
         B, D, H, W, C = x.shape
         window_size, shift_size = get_window_size((D, H, W), self.window_size, self.shift_size)
-        print(x.shape, self.dim)
+        # print(x.shape, self.dim)
         x = self.norm1(x)
         # pad feature maps to multiples of window size
         pad_l = pad_t = pad_d0 = 0
@@ -96,7 +96,7 @@ class SwinTransformerBlock3D(tf.keras.layers.Layer):
         return x
 
     def forward_part2(self, x):
-        print("forward-2")
+        # print("forward-2")
         return self.drop_path(self.mlp(self.norm2(x)))
 
     def call(self, x, mask_matrix):
@@ -105,22 +105,22 @@ class SwinTransformerBlock3D(tf.keras.layers.Layer):
             x: Input feature, tensor size (B, D, H, W, C).
             mask_matrix: Attention mask for cyclic shift.
         """
-        print(x.shape, "swinBlock")
+        # print(x.shape, "swinBlock")
         shortcut = x
-        if self.use_checkpoint:
-            #x = checkpoint.checkpoint(self.forward_part1, x, mask_matrix)
-            x = self.forward_part1(x, mask_matrix)
+        # if self.use_checkpoint:
+        #     #x = checkpoint.checkpoint(self.forward_part1, x, mask_matrix)
+        #     x = self.forward_part1(x, mask_matrix)
             
-        else:
-            x = self.forward_part1(x, mask_matrix)
+        # else:
+        x = self.forward_part1(x, mask_matrix)
         x = shortcut + self.drop_path(x)
 
 
-        if self.use_checkpoint:
-            # x = x + checkpoint.checkpoint(self.forward_part2, x)
-            x = x + self.forward_part2(x)
+        # if self.use_checkpoint:
+        #     # x = x + checkpoint.checkpoint(self.forward_part2, x)
+        #     x = x + self.forward_part2(x)
 
-        else:
-            x = x + self.forward_part2(x)
-        print(x.shape, "swin-out")
+        # else:
+        x = x + self.forward_part2(x)
+        # print(x.shape, "swin-out")
         return x
