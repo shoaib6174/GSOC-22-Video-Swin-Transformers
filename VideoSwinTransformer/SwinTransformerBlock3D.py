@@ -122,5 +122,6 @@ class SwinTransformerBlock3D(tf.keras.layers.Layer):
 
         # else:
         x = x + self.forward_part2(x)
+        
         # print(x.shape, "swin-out")
         return x

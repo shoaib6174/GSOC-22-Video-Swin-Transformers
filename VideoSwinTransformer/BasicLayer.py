@@ -1,18 +1,23 @@
+from traceback import print_tb
 import tensorflow as tf
 from einops import rearrange
 import numpy as np
 from functools import  lru_cache
 from keras.layers import LayerNormalization
+from tensorflow.python.ops.gen_math_ops import imag
 
 from .SwinTransformerBlock3D import SwinTransformerBlock3D
 from .get_window_size import get_window_size
 from .window_partition import window_partition
 
-@lru_cache()
+# @lru_cache()
 def compute_mask(D, H, W, window_size, shift_size, device):
     # print(D,H, W, window_size, shift_size)
     img_mask = np.zeros((1, D, H, W, 1))  # 1 Dp Hp Wp 1.  # ? device
+
+    # print(img_mask.dtype)
     # print("compute mask")
+
     cnt = 0
     for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0],None):
         for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1],None):
@@ -25,8 +30,13 @@ def compute_mask(D, H, W, window_size, shift_size, device):
     mask_windows = tf.squeeze(mask_windows, axis = -1)  # nW, ws[0]*ws[1]*ws[2] ??
     # print(mask_windows.shape)
     attn_mask = tf.expand_dims(mask_windows, axis=1) - tf.expand_dims(mask_windows, axis=2)
-    attn_mask = tf.where(attn_mask != 0, -100.0, attn_mask)
-    attn_mask = tf.where(attn_mask == 0, 0.0, attn_mask)
+    
+    # print("attn_mask ", attn_mask.dtype)
+
+    attn_mask = tf.cast(attn_mask, dtype="float64")
+
+    attn_mask = tf.where(attn_mask != 0, tf.constant(-100, dtype= 'float64'), attn_mask)
+    attn_mask = tf.where(attn_mask == 0, tf.constant(0, dtype= 'float64'), attn_mask)
 
     return attn_mask
 
@@ -103,8 +113,15 @@ class BasicLayer(tf.keras.layers.Layer):
         Dp = int(np.ceil(D / window_size[0])) * window_size[0]
         Hp = int(np.ceil(H / window_size[1])) * window_size[1]
         Wp = int(np.ceil(W / window_size[2])) * window_size[2]
+
+        # print('basic_layer')
+
         attn_mask = compute_mask(Dp, Hp, Wp, window_size, shift_size, x.device) #??
+
         # print(x.shape, attn_mask.shape, "befor blc in basic")
+        # print(attn_mask.dtype, x.dtype)
+
+
         for blk in self.blocks:
             x = blk(x, attn_mask)
         x = tf.reshape(x, [B, D, H, W, -1])
