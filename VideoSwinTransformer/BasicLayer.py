@@ -41,7 +41,7 @@ def compute_mask(D, H, W, window_size, shift_size, device):
     return attn_mask
 
 
-class BasicLayer(tf.keras.layers.Layer):
+class BasicLayer(tf.keras.layers.Model):
     """ A basic Swin Transformer layer for one stage.
     Args:
         dim (int): Number of feature channels

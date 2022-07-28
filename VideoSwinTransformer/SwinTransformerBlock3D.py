@@ -13,7 +13,7 @@ from .window_reverse import window_reverse
 from .get_window_size import get_window_size
 
 
-class SwinTransformerBlock3D(tf.keras.layers.Layer):
+class SwinTransformerBlock3D(tf.keras.Model):
     """ Swin Transformer Block.
     Args:
         dim (int): Number of input channels.

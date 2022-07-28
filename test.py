@@ -25,9 +25,9 @@ if __name__ == "__main__":
    output = swin(x)
    print(output.shape)
 
-   print(swin.projection.layers)
-   print(swin.layers[-1])
-   print("basic",swin.layers[2].blocks[1])
+   # print(swin.projection.layers)
+   # print(swin.layers[-1])
+   print("basic",swin.layers[2].blocks[1].layers)
    # for i in range(len(swin.weights)):
   
    #    print(swin.weights[i].name)
