@@ -79,7 +79,7 @@ class BasicLayer(tf.keras.layers.Layer):
         self.use_checkpoint = use_checkpoint
 
         # build 
-        self.block = []
+        
         self.blocks = [
             SwinTransformerBlock3D(
                 dim=dim,

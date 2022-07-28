@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
    print(swin.projection.layers)
    print(swin.layers[-1])
-   # print("basic",swin.layers3D[0].blocks.layers[0].layers)
-   for i in range(len(swin.weights)):
+   print("basic",swin.layers[2].blocks[1])
+   # for i in range(len(swin.weights)):
   
-      print(swin.weights[i].name)
+   #    print(swin.weights[i].name)
