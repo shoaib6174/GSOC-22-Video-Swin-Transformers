@@ -8,6 +8,7 @@ from .PatchMerging import  PatchMerging
 from .BasicLayer import BasicLayer
 from .PatchEmbed3D import PatchEmbed3D
 
+from keras.layers import  Conv3D
 
 class SwinTransformer3D(tf.keras.Model):
     def __init__(self, pretrained=None,
@@ -42,13 +43,23 @@ class SwinTransformer3D(tf.keras.Model):
         self.mlp_ratio = mlp_ratio
 
 
-        # split image into non-overlapping patches
-        self.patch_embed = PatchEmbed3D(
-            patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
-            norm_layer=norm_layer if self.patch_norm else None)
+        # # split image into non-overlapping patches
+        # self.patch_embed = PatchEmbed3D(
+        #     patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
+        #     norm_layer=LayerNormalization)
         
+        self.projection = tf.keras.Sequential(
+            [
+                Conv3D(
+                    embed_dim, kernel_size = patch_size , strides= patch_size , name= "conv_projection"
+                )
+            ],
+            name = "projection"
+        )
+
+        if self.patch_norm:
+            self.projection.add(norm_layer(epsilon=1e-5))
         
-    
 
         self.pos_drop = Dropout(drop_rate)
 
@@ -94,7 +105,10 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
-        x = self.patch_embed(x)
+        # x = self.patch_embed(x)
+        x = self.projection(x)
+        x = rearrange(x, 'b d h w c -> b c d h w')
+        print("embed", x.shape)
 
         x = self.pos_drop(x)
 
