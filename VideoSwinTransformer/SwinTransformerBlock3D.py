@@ -56,7 +56,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         self.mlp = mlp_block(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
 
     def forward_part1(self, x, mask_matrix):
-
+        
         # print('forward1')
         B, D, H, W, C = x.shape
         window_size, shift_size = get_window_size((D, H, W), self.window_size, self.shift_size)
@@ -73,6 +73,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
 
 
         _, Dp, Hp, Wp, _ = x.shape
+        
         # cyclic shift
         if any(i > 0 for i in shift_size):
             shifted_x = tf.roll(x, shift=[-shift_size[0], -shift_size[1], -shift_size[2]], axis=[1, 2, 3]) #?
@@ -81,6 +82,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
             shifted_x = x
             attn_mask = None
         # partition windows
+        print("block", shifted_x.shape)
         x_windows = window_partition(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
         # W-MSA/SW-MSA
         attn_windows = self.attn(x_windows, mask=attn_mask)  # B*nW, Wd*Wh*Ww, C

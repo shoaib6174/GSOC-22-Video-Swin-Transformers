@@ -10,20 +10,21 @@ from .SwinTransformerBlock3D import SwinTransformerBlock3D
 from .get_window_size import get_window_size
 from .window_partition import window_partition
 
-# @lru_cache()
+@lru_cache()
 def compute_mask(D, H, W, window_size, shift_size, device):
     # print(D,H, W, window_size, shift_size)
     img_mask = np.zeros((1, D, H, W, 1))  # 1 Dp Hp Wp 1.  # ? device
 
     # print(img_mask.dtype)
     # print("compute mask")
-
+ 
     cnt = 0
     for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0],None):
         for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1],None):
             for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2],None):
                 img_mask[:, d, h, w, :] = cnt
                 cnt += 1
+    img_mask = tf.convert_to_tensor(img_mask, dtype="float32")
     mask_windows = window_partition(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
     # print(mask_windows.shape)
 

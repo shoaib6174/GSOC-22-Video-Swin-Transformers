@@ -25,23 +25,25 @@ if __name__ == "__main__":
    output = swin(x)
    print(output.shape)
 
-   # print(swin.projection.layers)
-   # print(swin.layers[-1])
-   print("basic",swin.layers[2].layers[1].layers)
-   for a in swin.layers[2:-1]:
-      print(a)
-      for b in a.layers:
-         print(type(b))
-         print("----")
-         if isinstance(b, SwinTransformerBlock3D):
-            print("swin block layers")
-            for c in b.layers:
-               print(c)
-               print("attn")
-               if isinstance(c, WindowAttention3D):
-                  print(c.qkv)
+   print("--------------------------")
+   # # print(swin.projection.layers)
+   # # print(swin.layers[-1])
+   # print("basic",swin.layers[2].layers[1].layers)
+   # for a in swin.layers[2:-1]:
+   #    print(a)
+   #    for b in a.layers:
+   #       print(type(b))
+   #       print("----")
+   #       if isinstance(b, SwinTransformerBlock3D):
+   #          print("swin block layers")
+   #          for c in b.layers:
+   #             print(c)
+   #             print("attn")
+   #             if isinstance(c, WindowAttention3D):
+   #                print(c.qkv)
 
-      print()
+   #    print()
    # for i in range(len(swin.weights)):
   
    #    print(swin.weights[i].name)
+   swin.save("model")

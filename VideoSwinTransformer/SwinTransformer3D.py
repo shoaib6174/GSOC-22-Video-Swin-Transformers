@@ -26,7 +26,7 @@ class SwinTransformer3D(tf.keras.Model):
                  attn_drop_rate=0.,
                  drop_path_rate=0.2,
                  norm_layer= LayerNormalization,
-                 patch_norm=True,
+                 patch_norm=False,
                  frozen_stages=-1,
                  use_checkpoint=False):
       
@@ -105,10 +105,11 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
+        print("start", x.shape)
         # x = self.patch_embed(x)
         x = self.projection(x)
         x = rearrange(x, 'b d h w c -> b c d h w')
-        print("embed", x.shape)
+        # print("embed", x.shape)
 
         x = self.pos_drop(x)
 
