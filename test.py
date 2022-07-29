@@ -46,4 +46,6 @@ if __name__ == "__main__":
    # for i in range(len(swin.weights)):
   
    #    print(swin.weights[i].name)
-   swin.save("model")
+
+
+   # swin.save("model")

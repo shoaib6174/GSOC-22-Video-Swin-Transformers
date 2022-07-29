@@ -105,10 +105,13 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
-        print("start", x.shape)
+        # print("start", x.shape)
         # x = self.patch_embed(x)
+
         x = self.projection(x)
         x = rearrange(x, 'b d h w c -> b c d h w')
+
+        
         # print("embed", x.shape)
 
         x = self.pos_drop(x)

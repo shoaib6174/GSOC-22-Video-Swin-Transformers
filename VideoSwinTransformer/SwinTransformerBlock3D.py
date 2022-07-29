@@ -82,7 +82,9 @@ class SwinTransformerBlock3D(tf.keras.Model):
             shifted_x = x
             attn_mask = None
         # partition windows
-        print("block", shifted_x.shape)
+
+        # print("block", shifted_x.shape)
+
         x_windows = window_partition(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
         # W-MSA/SW-MSA
         attn_windows = self.attn(x_windows, mask=attn_mask)  # B*nW, Wd*Wh*Ww, C
