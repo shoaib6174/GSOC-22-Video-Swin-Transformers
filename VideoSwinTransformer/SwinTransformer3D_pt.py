@@ -580,7 +580,7 @@ class SwinTransformer3D_pt(nn.Module):
         the weight of swin2d models should be inflated to fit in the shapes of
         the 3d counterpart.
         Args:
-            logger (logging.Logger): The logger used to print
+            logger (logging.Logger): The logger used to #print
                 debugging infomation.
         """
         checkpoint = torch.load(self.pretrained, map_location='cpu')

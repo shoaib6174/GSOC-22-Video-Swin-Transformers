@@ -49,7 +49,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
         
-        # print("drop_path", drop_path)
+        # #print("drop_path", drop_path)
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
         mlp_hidden_dim = int(dim * mlp_ratio)
@@ -57,33 +57,69 @@ class SwinTransformerBlock3D(tf.keras.Model):
 
     def forward_part1(self, x, mask_matrix):
         
-        # print('forward1')
-        B, D, H, W, C = x.shape
+        # #print('forward1')
+        B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
+
+      
         window_size, shift_size = get_window_size((D, H, W), self.window_size, self.shift_size)
-        # print(x.shape, self.dim)
+        # #print(x.shape, self.dim)
         x = self.norm1(x)
         # pad feature maps to multiples of window size
+        # pad_l = pad_t = pad_d0 = tf.Variable([0])
+        # pad_d1 = (tf.Variable([window_size[0]]) - D % tf.Variable([window_size[0]])) % tf.Variable([window_size[0]])
+        # pad_b = (tf.Variable([window_size[1]]) - H % tf.Variable([window_size[1]])) % tf.Variable([window_size[1]])
+        # pad_r = (tf.constant([window_size[2]]) - W % tf.constant([window_size[2]])) % tf.constant([window_size[2]])
+        
+        # #print("+++++++++paddings", type(pad_b), pad_b.shape, pad_b, pad_r)
+        # zero = 0
+        # #print( pad_b.numpy()[0])
+
+        
+        # # paddings = tf.constant([ [tf.constant([0]),tf.Variable([0])] , [tf.Variable([pad_d0]),  tf.Variable([pad_d1])], [tf.Variable([pad_t]),  tf.Variable([pad_b])], [tf.Variable([pad_l]),  tf.Variable([pad_r])] , [tf.Variable([0]),tf.Variable([0])] ])
+        # # paddings = tf.constant([ [tf.Variable([0]),tf.Variable([0])] , [tf.Variable([pad_d0]),  tf.Variable([pad_d1])], [tf.Variable([pad_t]),  tf.Variable([pad_b])], [tf.Variable([pad_l]),  tf.Variable([pad_r])] , [tf.Variable([0]),tf.Variable([0])] ])
+        
+        # paddings = [[ zero, zero ] , [pad_d0.numpy()[0] , pad_d1.numpy()[0]] , [pad_t.numpy()[0], pad_b.numpy()[0]] , [pad_l.numpy()[0], pad_r.numpy()[0]] , [zero,zero]  ]
+        #print("wido", window_size[0], D)
+        #print(((window_size[0] - D % window_size[0]) % window_size[0]))
         pad_l = pad_t = pad_d0 = 0
-        pad_d1 = (window_size[0] - D % window_size[0]) % window_size[0]
-        pad_b = (window_size[1] - H % window_size[1]) % window_size[1]
-        pad_r = (window_size[2] - W % window_size[2]) % window_size[2]
-        
-        paddings = tf.constant([[0,0] , [pad_d0, pad_d1] , [pad_t, pad_b] , [pad_l, pad_r], [0, 0] ])
+        try: 
+            pad_d1 = ((window_size[0] - D % window_size[0]) % window_size[0]).numpy()
+            pad_b = ((window_size[1] - H % window_size[1]) % window_size[1]).numpy()
+            pad_r = ((window_size[2] - W % window_size[2]) % window_size[2]).numpy()
+        except:
+            pad_d1 = (window_size[0] - D % window_size[0]) % window_size[0]
+            pad_b = (window_size[1] - H % window_size[1]) % window_size[1]
+            pad_r = (window_size[2] - W % window_size[2]) % window_size[2]
+
+        #print(pad_b)
+        zero = tf.convert_to_tensor(1)
+        pad_d1 = tf.convert_to_tensor(pad_d1)
+        pad_b = tf.convert_to_tensor(pad_b)
+        pad_r = tf.convert_to_tensor(pad_r)
+
+        paddings = [[0,0] , [pad_d0, pad_d1] , [pad_t, pad_b] , [pad_l, pad_r], [0, 0] ]
+
+        # paddings = [[0, 0], [zero, zero] , [zero, zero] , [zero, zero], [0, 0] ]
+        #print(paddings)
         x = tf.pad(x, paddings)
-
-
-        _, Dp, Hp, Wp, _ = x.shape
         
+        
+        _, Dp, Hp, Wp, _ = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
+        #print("++++++++++++ padding Done",tf.shape(x), Dp, Hp, Wp)
+
+        #print("shift_size", self.shift_size,  shift_size)
+
+
         # cyclic shift
-        if any(i > 0 for i in shift_size):
-            shifted_x = tf.roll(x, shift=[-shift_size[0], -shift_size[1], -shift_size[2]], axis=[1, 2, 3]) #?
+        if any(i > 0 for i in self.shift_size):
+            shifted_x = tf.roll(x, shift=[-self.shift_size[0], -self.shift_size[1], -self.shift_size[2]], axis=[1, 2, 3]) #?
             attn_mask = mask_matrix
         else:
             shifted_x = x
             attn_mask = None
         # partition windows
 
-        # print("block", shifted_x.shape)
+        # #print("block", shifted_x.shape)
 
         x_windows = window_partition(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
         # W-MSA/SW-MSA
@@ -92,8 +128,8 @@ class SwinTransformerBlock3D(tf.keras.Model):
         attn_windows = tf.reshape( attn_windows ,  [-1, *(window_size+(C,))] )
         shifted_x = window_reverse(attn_windows, window_size, B, Dp, Hp, Wp)  # B D' H' W' C
         # reverse cyclic shift
-        if any(i > 0 for i in shift_size):
-            x = tf.roll(shifted_x, shift=[shift_size[0], shift_size[1], shift_size[2]], axis=[1, 2, 3]) #?
+        if any(i > 0 for i in self.shift_size):
+            x = tf.roll(shifted_x, shift=[self.shift_size[0], self.shift_size[1], self.shift_size[2]], axis=[1, 2, 3]) #?
         else:
             x = shifted_x
 
@@ -102,7 +138,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         return x
 
     def forward_part2(self, x):
-        # print("forward-2")
+        # #print("forward-2")
         return self.drop_path(self.mlp(self.norm2(x)))
 
     def call(self, x, mask_matrix):
@@ -111,7 +147,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
             x: Input feature, tensor size (B, D, H, W, C).
             mask_matrix: Attention mask for cyclic shift.
         """
-        # print(x.shape, "swinBlock")
+        # #print(x.shape, "swinBlock")
         shortcut = x
         # if self.use_checkpoint:
         #     #x = checkpoint.checkpoint(self.forward_part1, x, mask_matrix)
@@ -129,5 +165,5 @@ class SwinTransformerBlock3D(tf.keras.Model):
         # else:
         x = x + self.forward_part2(x)
         
-        # print(x.shape, "swin-out")
+        # #print(x.shape, "swin-out")
         return x

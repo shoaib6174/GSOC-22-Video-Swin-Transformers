@@ -51,21 +51,21 @@ def modify_tf_block( tf_component, pt_weight, pt_bias = None, is_attn=False):
         tf_component.kernel.assign(tf.Variable(pt_weight))
         if pt_bias is not None:
             tf_component.bias.assign(tf.Variable(pt_bias))
-        print("dense/conv3d")
+        #print("dense/conv3d")
     elif isinstance(tf_component, tf.keras.layers.LayerNormalization):
         tf_component.gamma.assign(tf.Variable(pt_weight))
         tf_component.beta.assign(tf.Variable(pt_bias))
-        print("layer norm")
+        #print("layer norm")
     elif isinstance(tf_component, (tf.Variable)):
         # For regular variables (tf.Variable).
         tf_component.assign(tf.Variable(pt_weight))
-        print("variable")
+        #print("variable")
     else:
-        print("else")
+        #print("else")
         return tf.convert_to_tensor(pt_weight)
         
-    print(in_shape, pt_weight.shape , type(tf_component))
-    print()
+    #print(in_shape, pt_weight.shape , type(tf_component))
+    #print()
 
     return tf_component
 
@@ -98,7 +98,7 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
 
               # Layer norm.
               if isinstance(inner_layer, tf.keras.layers.LayerNormalization):
-                  print("layer norm")
+                  #print("layer norm")
                   layer_norm_prefix = (
                       f"{common_prefix}.{block_idx}.norm{layernorm_idx}"
                   )
@@ -114,7 +114,7 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
 
               # Window attention.
               elif isinstance(inner_layer, WindowAttention3D):
-                  print("window attention")
+                  #print("window attention")
                   attn_prefix = f"{common_prefix}.{block_idx}.attn"
 
                   # Relative position.
@@ -151,7 +151,7 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
 
               # MLP.
               elif isinstance(inner_layer, tf.keras.Model):
-                  print("mlp")
+                  #print("mlp")
                   mlp_prefix = f"{common_prefix}.{block_idx}.mlp"
                   for mlp_layer in inner_layer.layers:
                       if isinstance(mlp_layer, tf.keras.layers.Dense):
@@ -171,7 +171,7 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
 
 
 def main(args):
-    print("Converting ",args.model_name)
+    #print("Converting ",args.model_name)
 
     cfg_method = model_configs.MODEL_MAP[args.model_name]
     cfg = cfg_method()
@@ -181,20 +181,20 @@ def main(args):
     del cfg["name"]
     del cfg['link']
 
-    print("Instantiating PyTorch model...")
+    #print("Instantiating PyTorch model...")
     sys.path.append("..")
     pt_model = SwinTransformer3D_pt(**cfg)
 
     # command = f"wget {link} -O {name}.pth"
     # os.system(command)
-    # print("downloaded")
+    # #print("downloaded")
 
     if not os.path.exists(f"{name}.pth"):
         download_weight_command = f"wget {link} -O {name}.pth"
         os.system(download_weight_command)
-        print("downloaded")
+        #print("downloaded")
     else:
-        print("file exists")
+        #print("file exists")
         
     
 
@@ -210,19 +210,19 @@ def main(args):
 
     # dummy_x = torch.rand(1, 3, 32, 224, 224)
     # logits = pt_model(dummy_x)
-    # print(logits.shape)
+    # #print(logits.shape)
 
     input = tf.random.normal((1,32, 224,224, 3), dtype='float64')
     tf_model = SwinTransformer3D(**cfg)
     _ =  tf_model(input)
 
-    # print(_.shape)
+    # #print(_.shape)
 
     # Load the PT params.
     np_state_dict = pt_model.state_dict()
     np_state_dict = {k: np_state_dict[k].numpy() for k in np_state_dict}
 
-    print("Beginning parameter porting process...")
+    #print("Beginning parameter porting process...")
 
     #projection
     tf_model.projection.layers[0] = modify_tf_block(
@@ -246,19 +246,19 @@ def main(args):
     
     # swin layers
     for i in range(2, len(tf_model.layers) - 1):
-        print(tf_model.layers[i])
+        #print(tf_model.layers[i])
         _ = modify_swin_blocks(np_state_dict,
                             f"layers.{i-2}",
                             tf_model.layers[i].layers)
-        print()
+        #print()
     
-    print("Porting successful, serializing TensorFlow model...")
+    #print("Porting successful, serializing TensorFlow model...")
     save_path = os.path.join(os.getcwd(), f"{args.model_name}_tf.pth")
 
     _ =  tf_model(input)
-    # print(_.shape)
+    # #print(_.shape)
     tf_model.save(save_path)
-    print(f"TensorFlow model serialized to: {save_path}...")
+    #print(f"TensorFlow model serialized to: {save_path}...")
 
 
 if __name__ == "__main__":

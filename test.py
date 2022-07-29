@@ -1,6 +1,6 @@
 from re import S
 import tensorflow as tf
-
+import numpy
 from VideoSwinTransformer import SwinTransformer3D
 
 from VideoSwinTransformer import *
@@ -19,33 +19,38 @@ from VideoSwinTransformer import *
 
 if __name__ == "__main__":
    # model.fit(x, y, batch_size=10, epochs=2)
+   
 
-   x = tf.random.normal([2, 8, 32,32, 3])
+   #print(numpy.version)
+
+   x = tf.random.normal([2, 8, 32,32, 3],   dtype="float32")
+   # x = tf.keras.Input((8,32,32,3))
    swin = SwinTransformer3D()
    output = swin(x)
-   print(output.shape)
+   # #print(output.shape)
+   #print(numpy.version.version)
 
-   print("--------------------------")
-   # # print(swin.projection.layers)
-   # # print(swin.layers[-1])
-   # print("basic",swin.layers[2].layers[1].layers)
+   #print("--------------------------")
+   # # #print(swin.projection.layers)
+   # # #print(swin.layers[-1])
+   # #print("basic",swin.layers[2].layers[1].layers)
    # for a in swin.layers[2:-1]:
-   #    print(a)
+   #    #print(a)
    #    for b in a.layers:
-   #       print(type(b))
-   #       print("----")
+   #       #print(type(b))
+   #       #print("----")
    #       if isinstance(b, SwinTransformerBlock3D):
-   #          print("swin block layers")
+   #          #print("swin block layers")
    #          for c in b.layers:
-   #             print(c)
-   #             print("attn")
+   #             #print(c)
+   #             #print("attn")
    #             if isinstance(c, WindowAttention3D):
-   #                print(c.qkv)
+   #                #print(c.qkv)
 
-   #    print()
+   #    #print()
    # for i in range(len(swin.weights)):
   
-   #    print(swin.weights[i].name)
+   #    #print(swin.weights[i].name)
 
 
-   # swin.save("model")
+   swin.save("model")

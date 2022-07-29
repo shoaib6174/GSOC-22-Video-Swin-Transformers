@@ -1,4 +1,5 @@
 def get_window_size(x_size, window_size, shift_size=None):
+    #print("get window",x_size, window_size, shift_size)
     use_window_size = list(window_size)
     if shift_size is not None:
         use_shift_size = list(shift_size)
