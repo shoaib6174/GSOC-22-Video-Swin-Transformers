@@ -3,7 +3,7 @@ import tensorflow as tf
 
 from VideoSwinTransformer import SwinTransformer3D
 
-
+from VideoSwinTransformer import *
 
 # x = tf.random.normal([1000, 8, 32,32, 3])
 # y = tf.random.uniform(shape=[1000], minval=0, maxval=5, dtype='int64')
@@ -27,7 +27,21 @@ if __name__ == "__main__":
 
    # print(swin.projection.layers)
    # print(swin.layers[-1])
-   print("basic",swin.layers[2].blocks[1].layers)
+   print("basic",swin.layers[2].layers[1].layers)
+   for a in swin.layers[2:-1]:
+      print(a)
+      for b in a.layers:
+         print(type(b))
+         print("----")
+         if isinstance(b, SwinTransformerBlock3D):
+            print("swin block layers")
+            for c in b.layers:
+               print(c)
+               print("attn")
+               if isinstance(c, WindowAttention3D):
+                  print(c.qkv)
+
+      print()
    # for i in range(len(swin.weights)):
   
    #    print(swin.weights[i].name)
