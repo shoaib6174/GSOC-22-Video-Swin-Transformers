@@ -60,9 +60,14 @@ class WindowAttention3D(tf.keras.layers.Layer):
         attn = attn + tf.expand_dims(relative_position_bias, axis=0)
 
         if mask is not None:
-            nW = mask.get_shape()[0]  # tf.shape(mask)[0]
+
+            # print("mask", type(mask), tf.shape(mask), mask.get_shape())
+
+            nW = tf.shape(mask)[0]  # tf.shape(mask)[0]
+            # print([-1, nW, self.num_heads, N, N])
             attn = tf.reshape(attn, shape=[-1, nW, self.num_heads, N, N]) + tf.cast(
                 tf.expand_dims(tf.expand_dims(mask, axis=1), axis=0), attn.dtype)
+
             attn = tf.reshape(attn, shape=[-1, self.num_heads, N, N])
             attn = tf.nn.softmax(attn, axis=-1)
         else:

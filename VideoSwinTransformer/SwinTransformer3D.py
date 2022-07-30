@@ -43,11 +43,8 @@ class SwinTransformer3D(tf.keras.Model):
         self.mlp_ratio = mlp_ratio
 
 
-        # # split image into non-overlapping patches
-        # self.patch_embed = PatchEmbed3D(
-        #     patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
-        #     norm_layer=LayerNormalization)
-        
+
+       
         self.projection = tf.keras.Sequential(
             [
                 Conv3D(
@@ -105,7 +102,7 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
-        #print("/*/*/*/*/*/*/*/*/*/*/*/*/*/*/start", x.shape)
+        # print("/*/*/*/*/*/*/*/*/*/*/*/*/*/*/start", x.shape)
         # x = self.patch_embed(x)
 
         x = self.projection(x)

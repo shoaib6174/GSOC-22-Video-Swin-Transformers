@@ -13,18 +13,43 @@ from .window_partition import window_partition
 @lru_cache()
 def compute_mask(D, H, W, window_size, shift_size, device):
     # #print(D,H, W, window_size, shift_size)
-    img_mask = np.zeros((1, D, H, W, 1))  # 1 Dp Hp Wp 1.  # ? device
+    if not isinstance(D, ( int, np.int32) ):
+
+        D = D.deref()
+        H = H.deref()
+        W = W.deref()
+        window_size = list(window_size)
+        shift_size =list(shift_size)
+
+        for i in range(len(window_size)):
+            
+            window_size[i]  = window_size[i].deref()
+            shift_size[i] = shift_size[i].deref()
+    
+        window_size =tuple(window_size)
+        shift_size =tuple(shift_size)
+
+        img_mask = tf.Variable( tf.zeros((1, D, H, W, 1)) )
+
+        
+    else:
+        img_mask = np.zeros((1, D, H, W, 1))  # 1 Dp Hp Wp 1.  # ? device
 
     # #print(img_mask.dtype)
     # #print("compute mask")
  
-    cnt = 0
+    cnt = tf.Variable(0, dtype= "float32")
     for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0],None):
         for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1],None):
             for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2],None):
-                #print(d,h,w)
-                img_mask[:, d, h, w, :] = cnt
-                cnt += 1
+
+                try:
+                    img_mask[:, d, h, w, :] = cnt.numpy()
+                except:
+                    img_mask[:, d, h, w, :].assign(cnt)
+
+
+                cnt = cnt + 1
     img_mask = tf.convert_to_tensor(img_mask, dtype="float32")
     mask_windows = window_partition(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
     # #print(mask_windows.shape)
@@ -124,11 +149,11 @@ class BasicLayer(tf.keras.Model):
         #         window_size[i]  = tf.convert_to_tensor(window_size[i]).numpy()
        
         # window_size =tuple(window_size)
+        # print("get_window_size_output", window_size)
 
-
-        Dp = int(np.ceil(d/ window_size[0])) * window_size[0]
-        Hp = int(np.ceil(h / window_size[1])) * window_size[1]
-        Wp = int(np.ceil(w / window_size[2])) * window_size[2]
+        Dp = int(tf.math.ceil(D/ window_size[0])) * window_size[0]
+        Hp = int(tf.math.ceil(H / window_size[1])) * window_size[1]
+        Wp = int(tf.math.ceil(W / window_size[2])) * window_size[2]
 
         
 
@@ -136,9 +161,31 @@ class BasicLayer(tf.keras.Model):
         # Hp = Hp.numpy() if not isinstance(Hp, int) else Hp
         # Wp = Wp.numpy() if not isinstance(Wp, int) else Wp
 
+        # print("compute_mask inputs", Dp, Hp, Wp, window_size, shift_size, x.device, type(Dp)) 
 
+        # attn_mask = compute_mask(Dp, Hp, Wp, window_size, shift_size, x.device)
+
+        try:
+            attn_mask = compute_mask(Dp, Hp, Wp, window_size, shift_size, x.device) #??
+        except:
+            # print("compute_mask except", type(Dp), Hp.ref(), Wp, "\n",window_size, shift_size, x.device, type(Dp)) 
+
+            window_size = list(window_size)
+            shift_size =list(shift_size)
+
+            for i in range(len(window_size)):
+                if not isinstance( window_size[i], int):
+                    window_size[i]  = window_size[i].ref()
+                    shift_size[i] = shift_size[i].ref()
         
-        attn_mask = compute_mask(Dp, Hp, Wp, window_size, shift_size, x.device) #??
+            window_size =tuple(window_size)
+            shift_size =tuple(shift_size)
+
+
+            # print("compute_mask except", type(Dp), Hp.ref(), Wp, "\n",window_size, shift_size, x.device, type(Dp)) 
+            
+            attn_mask = compute_mask(Dp.ref(), Hp.ref(), Wp.ref(), window_size, shift_size, None) #??
+
 
 
 
