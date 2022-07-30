@@ -13,7 +13,7 @@ from .window_partition import window_partition
 
 @lru_cache()
 def compute_mask(D, H, W, window_size, shift_size, device):
-    print("************* compute input", D,H, W, window_size, shift_size)
+    # print(compute input", D,H, W, window_size, shift_size)
     if not isinstance(D, ( int, np.int32) ):
         D = D.deref()
         H = H.deref()
@@ -27,7 +27,7 @@ def compute_mask(D, H, W, window_size, shift_size, device):
             shift_size[i] = shift_size[i].deref()
 
 
-    img_mask = np.zeros((1, D, H, W, 1)) 
+    img_mask = tf.zeros((1, D, H, W, 1)) 
         
     # print(window_size, shift_size)
  
