@@ -102,7 +102,7 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
-        # print("/*/*/*/*/*/*/*/*/*/*/*/*/*/*/start", x.shape)
+        print("/*/*/*/*/*/*/*/*/*/*/*/*/*/*/start", x.shape)
         # x = self.patch_embed(x)
 
         x = self.projection(x)

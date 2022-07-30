@@ -1,4 +1,5 @@
 from traceback import print_tb
+from scipy.fftpack import shift
 import tensorflow as tf
 from einops import rearrange
 import numpy as np
@@ -12,53 +13,37 @@ from .window_partition import window_partition
 
 @lru_cache()
 def compute_mask(D, H, W, window_size, shift_size, device):
-    # #print(D,H, W, window_size, shift_size)
+    print("************* compute input", D,H, W, window_size, shift_size)
     if not isinstance(D, ( int, np.int32) ):
-
         D = D.deref()
         H = H.deref()
         W = W.deref()
+
         window_size = list(window_size)
         shift_size =list(shift_size)
 
         for i in range(len(window_size)):
-            
             window_size[i]  = window_size[i].deref()
             shift_size[i] = shift_size[i].deref()
-    
-        window_size =tuple(window_size)
-        shift_size =tuple(shift_size)
 
-        img_mask = tf.Variable( tf.zeros((1, D, H, W, 1)) )
 
+    img_mask = np.zeros((1, D, H, W, 1)) 
         
-    else:
-        img_mask = np.zeros((1, D, H, W, 1))  # 1 Dp Hp Wp 1.  # ? device
-
-    # #print(img_mask.dtype)
-    # #print("compute mask")
+    # print(window_size, shift_size)
  
-    cnt = tf.Variable(0, dtype= "float32")
+    cnt = 0
+
     for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0],None):
         for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1],None):
             for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2],None):
-
-                try:
-                    img_mask[:, d, h, w, :] = cnt.numpy()
-                except:
-                    img_mask[:, d, h, w, :].assign(cnt)
-
-
+                img_mask[:, d, h, w, :] = cnt
                 cnt = cnt + 1
     img_mask = tf.convert_to_tensor(img_mask, dtype="float32")
     mask_windows = window_partition(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
-    # #print(mask_windows.shape)
 
     mask_windows = tf.squeeze(mask_windows, axis = -1)  # nW, ws[0]*ws[1]*ws[2] ??
-    # #print(mask_windows.shape)
     attn_mask = tf.expand_dims(mask_windows, axis=1) - tf.expand_dims(mask_windows, axis=2)
     
-    # #print("attn_mask ", attn_mask.dtype)
 
     attn_mask = tf.cast(attn_mask, dtype="float64")
 
@@ -136,7 +121,6 @@ class BasicLayer(tf.keras.Model):
         # calculate attention mask for SW-MSA
         B, C, D, H, W = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
 
-        b, c, d, h, w = x.shape 
 
 
         window_size, shift_size = get_window_size((D,H,W), self.window_size, self.shift_size)
@@ -156,10 +140,8 @@ class BasicLayer(tf.keras.Model):
         Wp = int(tf.math.ceil(W / window_size[2])) * window_size[2]
 
         
+        print("----------", Dp, Hp, Wp)
 
-        # Dp = Dp.numpy() if not isinstance(Dp, int) else Dp
-        # Hp = Hp.numpy() if not isinstance(Hp, int) else Hp
-        # Wp = Wp.numpy() if not isinstance(Wp, int) else Wp
 
         # print("compute_mask inputs", Dp, Hp, Wp, window_size, shift_size, x.device, type(Dp)) 
 
