@@ -20,7 +20,7 @@ class WindowAttention3D(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         self.relative_position_bias_table = self.add_weight(shape=((2 * self.window_size[0] - 1) * (2 * self.window_size[1] - 1)* (2 * self.window_size[2] - 1), self.num_heads),
-                                                            initializer=tf.initializers.Zeros(), trainable=True) # 2*Wd-1 * 2*Wh-1 * 2*Ww-1, nH
+                                                            initializer=tf.initializers.Zeros(), trainable=True, name="relative_position_bias_table") # 2*Wd-1 * 2*Wh-1 * 2*Ww-1, nH
 
         coords_d = np.arange(self.window_size[0])
         coords_h = np.arange(self.window_size[1])

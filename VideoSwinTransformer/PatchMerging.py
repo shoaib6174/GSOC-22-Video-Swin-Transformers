@@ -2,17 +2,19 @@ import tensorflow as tf
 from keras.layers import Dense, LayerNormalization 
 
 class PatchMerging(tf.keras.layers.Layer):
-    def __init__(self, dim, norm_layer=LayerNormalization):
+    def __init__(self, dim, shape_of_input, norm_layer=LayerNormalization):
         super().__init__()
         self.dim = dim
         self.reduction = Dense(2 * dim, use_bias=False,  activation=None)
         self.norm = norm_layer(epsilon=1e-5)
+        self.shape_of_input = shape_of_input
         
 
     def call(self, x):
-        B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
-
-        #print(x, x.shape, tf.shape(x))
+        # B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
+        
+        _,_, _, H, W= self.shape_of_input
+        # print("patch merging",self.shape_of_input , x.shape, H, h,  W, w)
 
         # padding
         pad_input = (H % 2 == 1) or (W % 2 == 1)

@@ -1,9 +1,8 @@
 from keras.layers import Dropout , LayerNormalization
 import tensorflow as tf
 import numpy as np
-from einops import rearrange
 from .DropPath import DropPath
-
+from math import ceil
 from .PatchMerging import  PatchMerging
 from .BasicLayer import BasicLayer
 from .PatchEmbed3D import PatchEmbed3D
@@ -11,7 +10,7 @@ from .PatchEmbed3D import PatchEmbed3D
 from keras.layers import  Conv3D
 
 class SwinTransformer3D(tf.keras.Model):
-    def __init__(self, pretrained=None,
+    def __init__(self, input_shape = (2, 8, 224,224,3), pretrained=None,
                  pretrained2d=True,
                  patch_size=(4,4,4),
                  in_chans=3,
@@ -41,7 +40,7 @@ class SwinTransformer3D(tf.keras.Model):
         self.window_size = window_size
         self.patch_size = patch_size
         self.mlp_ratio = mlp_ratio
-
+        self.input_shapes = list(input_shape)
 
 
        
@@ -64,8 +63,26 @@ class SwinTransformer3D(tf.keras.Model):
         dpr = [x for x in np.linspace(0., drop_path_rate, sum(depths))] # stochastic depth decay rule
 
         # build layers
-        self.layers3D = [BasicLayer(dim=int(embed_dim * 2 ** i_layer),
-                                               
+        self.input_shapes = list(self.input_shapes)
+        self.input_shapes[2] = int(self.input_shapes[1] / 4)
+        self.layers3D = []
+
+        for i_layer in range(self.num_layers):
+            
+            self.input_shapes[1] = int(embed_dim * 2 ** i_layer)
+
+            if i_layer == 0:
+ 
+                self.input_shapes[3] , self.input_shapes[4] = int(input_shape[2] // 4) , int(input_shape[3] // 4)
+                
+            else:
+                self.input_shapes[3] = ceil(self.input_shapes[3] / 2 )
+                self.input_shapes[4] = ceil(self.input_shapes[4] / 2)
+
+   
+            self.layers3D.append(BasicLayer(dim= int(embed_dim * 2 ** i_layer),
+                                                input_shape = tuple(self.input_shapes),
+
                                                 depth=depths[i_layer],
                                                 num_heads=num_heads[i_layer],
                                                 window_size=window_size,
@@ -78,7 +95,7 @@ class SwinTransformer3D(tf.keras.Model):
                                                 downsample=PatchMerging if (
                                                     i_layer < self.num_layers - 1) else None,
                                                 use_checkpoint=use_checkpoint) 
-                            for i_layer in range(self.num_layers)]
+                            )
         
         self.num_features = int(embed_dim * 2**(self.num_layers-1))
 
@@ -102,23 +119,22 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
-        print("/*/*/*/*/*/*/*/*/*/*/*/*/*/*/start", x.shape)
-        # x = self.patch_embed(x)
+        print("--------------------------- Swin Trnsformer input size", x.shape)
 
         x = self.projection(x)
-        x = rearrange(x, 'b d h w c -> b c d h w')
+        x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
-        
-        # #print("embed", x.shape)
+
 
         x = self.pos_drop(x)
 
         for layer in self.layers3D:
             x = layer(x)
             
-        x = rearrange(x, 'n c d h w -> n d h w c') 
+        x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
+
         x = self.norm(x)
-        x = rearrange(x, 'n d h w c -> n c d h w')
+        x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
         return x
 

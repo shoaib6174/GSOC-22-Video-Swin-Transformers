@@ -194,7 +194,7 @@ def main(args):
         os.system(download_weight_command)
         #print("downloaded")
     else:
-        #print("file exists")
+        print("file exists")
         
     
 
@@ -264,3 +264,5 @@ def main(args):
 if __name__ == "__main__":
     args = parse_args()
     main(args)
+
+    

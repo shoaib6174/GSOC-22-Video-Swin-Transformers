@@ -15,7 +15,7 @@ def main():
         
         command = f"python convert.py -m {model_name}"
 
-        #print(command)
+        print(command)
         os.system(command)
         
         if i == 1:

@@ -1,7 +1,7 @@
 
 import tensorflow as tf
 from keras.layers import LayerNormalization
-
+import numpy as np
 
 from .WindowAttention3D import WindowAttention3D
 from .DropPath import DropPath
@@ -11,6 +11,38 @@ from .mlp2 import mlp_block
 from .window_partition import window_partition
 from .window_reverse import window_reverse
 from .get_window_size import get_window_size
+
+
+from functools import  lru_cache
+@lru_cache()
+def compute_mask(D, H, W, window_size, shift_size, device):
+
+    img_mask = np.zeros((1, D, H, W, 1)) 
+
+ 
+    cnt = 0
+
+    for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0],None):
+        for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1],None):
+            for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2],None):
+                img_mask[:, d, h, w, :] = cnt
+                cnt = cnt + 1
+    img_mask = tf.convert_to_tensor(img_mask, dtype="float32")
+
+    # print("basic compute", img_mask.shape, window_size, shift_size, D, H, W)
+
+    mask_windows = window_partition(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
+
+    mask_windows = tf.squeeze(mask_windows, axis = -1)  # nW, ws[0]*ws[1]*ws[2] ??
+    attn_mask = tf.expand_dims(mask_windows, axis=1) - tf.expand_dims(mask_windows, axis=2)
+    
+
+    attn_mask = tf.cast(attn_mask, dtype="float64")
+
+    attn_mask = tf.where(attn_mask != 0, -100.0, attn_mask)
+    attn_mask = tf.where(attn_mask == 0, 0.0 , attn_mask)
+
+    return attn_mask
 
 
 class SwinTransformerBlock3D(tf.keras.Model):
@@ -30,7 +62,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         norm_layer (nn.Module, optional): Normalization layer.  Default: nn.LayerNorm
     """
 
-    def __init__(self, dim, num_heads, window_size=(2,7,7), shift_size=(0,0,0),
+    def __init__(self, dim, compute_mask_info, num_heads, window_size=(2,7,7), shift_size=(0,0,0),
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0., drop_path=0.,
                  act_layer=tf.keras.activations.gelu, norm_layer=LayerNormalization, use_checkpoint=False):
         super().__init__()
@@ -40,6 +72,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         self.shift_size = shift_size
         self.mlp_ratio = mlp_ratio
         self.use_checkpoint=use_checkpoint
+        self.compute_mask_info = compute_mask_info
 
         assert 0 <= self.shift_size[0] < self.window_size[0], "shift_size must in 0-window_size"
         assert 0 <= self.shift_size[1] < self.window_size[1], "shift_size must in 0-window_size"
@@ -48,79 +81,60 @@ class SwinTransformerBlock3D(tf.keras.Model):
         self.attn = WindowAttention3D(
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+
+        # compute mask
+        B, C, D, H, W = self.compute_mask_info["input_shape"]
+        mask_window_size, mask_shift_size = get_window_size((D,H,W), self.compute_mask_info["window_size"], self.compute_mask_info["shift_size"])
         
-        # #print("drop_path", drop_path)
+        Dp = int(tf.math.ceil(D/ mask_window_size[0])) * mask_window_size[0]
+        Hp = int(tf.math.ceil(H / mask_window_size[1])) * mask_window_size[1]
+        Wp = int(tf.math.ceil(W / mask_window_size[2])) * mask_window_size[2]
+
+        self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size, None)
+
+
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = mlp_block(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
 
-    def forward_part1(self, x, mask_matrix):
+    def forward_part1(self, x):
         
-        # #print('forward1')
         B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
+        
+        b, c, d, h ,w = self.compute_mask_info['input_shape']
 
-      
-        window_size, shift_size = get_window_size((D, H, W), self.window_size, self.shift_size)
-        # #print(x.shape, self.dim)
+        
+
+        window_size, shift_size = get_window_size((d, h, w), self.window_size, self.shift_size)
         x = self.norm1(x)
-        # pad feature maps to multiples of window size
-        # pad_l = pad_t = pad_d0 = tf.Variable([0])
-        # pad_d1 = (tf.Variable([window_size[0]]) - D % tf.Variable([window_size[0]])) % tf.Variable([window_size[0]])
-        # pad_b = (tf.Variable([window_size[1]]) - H % tf.Variable([window_size[1]])) % tf.Variable([window_size[1]])
-        # pad_r = (tf.constant([window_size[2]]) - W % tf.constant([window_size[2]])) % tf.constant([window_size[2]])
-        
-        # #print("+++++++++paddings", type(pad_b), pad_b.shape, pad_b, pad_r)
-        # zero = 0
-        # #print( pad_b.numpy()[0])
 
-        
-        # # paddings = tf.constant([ [tf.constant([0]),tf.Variable([0])] , [tf.Variable([pad_d0]),  tf.Variable([pad_d1])], [tf.Variable([pad_t]),  tf.Variable([pad_b])], [tf.Variable([pad_l]),  tf.Variable([pad_r])] , [tf.Variable([0]),tf.Variable([0])] ])
-        # # paddings = tf.constant([ [tf.Variable([0]),tf.Variable([0])] , [tf.Variable([pad_d0]),  tf.Variable([pad_d1])], [tf.Variable([pad_t]),  tf.Variable([pad_b])], [tf.Variable([pad_l]),  tf.Variable([pad_r])] , [tf.Variable([0]),tf.Variable([0])] ])
-        
-        # paddings = [[ zero, zero ] , [pad_d0.numpy()[0] , pad_d1.numpy()[0]] , [pad_t.numpy()[0], pad_b.numpy()[0]] , [pad_l.numpy()[0], pad_r.numpy()[0]] , [zero,zero]  ]
-        #print("wido", window_size[0], D)
-        #print(((window_size[0] - D % window_size[0]) % window_size[0]))
         pad_l = pad_t = pad_d0 = 0
-        try: 
-            pad_d1 = ((window_size[0] - D % window_size[0]) % window_size[0]).numpy()
-            pad_b = ((window_size[1] - H % window_size[1]) % window_size[1]).numpy()
-            pad_r = ((window_size[2] - W % window_size[2]) % window_size[2]).numpy()
-        except:
-            pad_d1 = (window_size[0] - D % window_size[0]) % window_size[0]
-            pad_b = (window_size[1] - H % window_size[1]) % window_size[1]
-            pad_r = (window_size[2] - W % window_size[2]) % window_size[2]
+ 
+        pad_d1 = (window_size[0] - d % window_size[0]) % window_size[0]
+        pad_b = (window_size[1] - h % window_size[1]) % window_size[1]
+        pad_r = (window_size[2] - w % window_size[2]) % window_size[2]
 
-        #print(pad_b)
-        zero = tf.convert_to_tensor(1)
-        pad_d1 = tf.convert_to_tensor(pad_d1)
-        pad_b = tf.convert_to_tensor(pad_b)
-        pad_r = tf.convert_to_tensor(pad_r)
+  
 
         paddings = [[0,0] , [pad_d0, pad_d1] , [pad_t, pad_b] , [pad_l, pad_r], [0, 0] ]
 
-        # paddings = [[0, 0], [zero, zero] , [zero, zero] , [zero, zero], [0, 0] ]
-        #print(paddings)
+
         x = tf.pad(x, paddings)
         
         
         _, Dp, Hp, Wp, _ = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
-        #print("++++++++++++ padding Done",tf.shape(x), Dp, Hp, Wp)
 
-        #print("shift_size", self.shift_size,  shift_size)
 
 
         # cyclic shift
         if any(i > 0 for i in self.shift_size):
             shifted_x = tf.roll(x, shift=[-self.shift_size[0], -self.shift_size[1], -self.shift_size[2]], axis=[1, 2, 3]) #?
-            attn_mask = mask_matrix
+            attn_mask = self.attn_mask
         else:
             shifted_x = x
             attn_mask = None
         # partition windows
-
-        # #print("block", shifted_x.shape)
-
         x_windows = window_partition(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
         # W-MSA/SW-MSA
         attn_windows = self.attn(x_windows, mask=attn_mask)  # B*nW, Wd*Wh*Ww, C
@@ -138,32 +152,23 @@ class SwinTransformerBlock3D(tf.keras.Model):
         return x
 
     def forward_part2(self, x):
-        # #print("forward-2")
+
         return self.drop_path(self.mlp(self.norm2(x)))
 
-    def call(self, x, mask_matrix):
+    def call(self, x):
         """ Forward function.
         Args:
             x: Input feature, tensor size (B, D, H, W, C).
             mask_matrix: Attention mask for cyclic shift.
         """
-        # #print(x.shape, "swinBlock")
+
         shortcut = x
-        # if self.use_checkpoint:
-        #     #x = checkpoint.checkpoint(self.forward_part1, x, mask_matrix)
-        #     x = self.forward_part1(x, mask_matrix)
-            
-        # else:
-        x = self.forward_part1(x, mask_matrix)
+        x = self.forward_part1(x)
         x = shortcut + self.drop_path(x)
 
 
-        # if self.use_checkpoint:
-        #     # x = x + checkpoint.checkpoint(self.forward_part2, x)
-        #     x = x + self.forward_part2(x)
 
-        # else:
         x = x + self.forward_part2(x)
         
-        # #print(x.shape, "swin-out")
+
         return x
