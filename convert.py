@@ -212,7 +212,7 @@ def main(args):
     # logits = pt_model(dummy_x)
     # #print(logits.shape)
 
-    input = tf.random.normal((1,32, 224,224, 3), dtype='float64')
+    input = tf.random.normal((1,8, 224,224, 3), dtype='float64')
     tf_model = SwinTransformer3D(**cfg)
     _ =  tf_model(input)
 

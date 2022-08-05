@@ -47,7 +47,7 @@ class SwinTransformer3D(tf.keras.Model):
         self.projection = tf.keras.Sequential(
             [
                 Conv3D(
-                    embed_dim, kernel_size = patch_size , strides= patch_size , name= "conv_projection"
+                    embed_dim, data_format= "channels_first" ,kernel_size = patch_size , strides= patch_size , name= "conv_projection"
                 )
             ],
             name = "projection"
