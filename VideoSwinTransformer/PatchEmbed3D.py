@@ -21,12 +21,11 @@ class PatchEmbed3D(tf.keras.Model):
 
     def call(self, x):
         B, C, D, H, W = x.get_shape().as_list()
-        ## padding
-        #print("embed in " , x.shape)
+
         x = self.proj(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
-        #print("conv3d", x.shape)
+
         
         if self.norm is not None:
         
@@ -35,6 +34,5 @@ class PatchEmbed3D(tf.keras.Model):
           x = self.norm(x)
           x = tf.reshape(x, shape=[B, C, -1])
           x = tf.reshape(x, shape=[-1, self.embed_dim, D, Wh, Ww])
-          #print("norm")
-        #print("embed_out",x.get_shape())
+
         return x

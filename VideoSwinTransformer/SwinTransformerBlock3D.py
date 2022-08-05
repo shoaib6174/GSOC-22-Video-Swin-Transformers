@@ -15,7 +15,7 @@ from .get_window_size import get_window_size
 
 from functools import  lru_cache
 @lru_cache()
-def compute_mask(D, H, W, window_size, shift_size, device):
+def compute_mask(D, H, W, window_size, shift_size):
 
     img_mask = np.zeros((1, D, H, W, 1)) 
 
@@ -77,6 +77,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         assert 0 <= self.shift_size[0] < self.window_size[0], "shift_size must in 0-window_size"
         assert 0 <= self.shift_size[1] < self.window_size[1], "shift_size must in 0-window_size"
         assert 0 <= self.shift_size[2] < self.window_size[2], "shift_size must in 0-window_size"
+
         self.norm1 = norm_layer(axis=-1, epsilon=1e-5)
         self.attn = WindowAttention3D(
             dim, window_size=self.window_size, num_heads=num_heads,
@@ -90,7 +91,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         Hp = int(tf.math.ceil(H / mask_window_size[1])) * mask_window_size[1]
         Wp = int(tf.math.ceil(W / mask_window_size[2])) * mask_window_size[2]
 
-        self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size, None)
+        self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size)
 
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity

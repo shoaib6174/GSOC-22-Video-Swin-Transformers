@@ -119,7 +119,7 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
-        print("--------------------------- Swin Trnsformer input size", x.shape)
+        print(" Swin Trnsformer3D input size", x.shape)
         # x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
         x = self.projection(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
@@ -138,10 +138,10 @@ class SwinTransformer3D(tf.keras.Model):
 
         return x
 
-    def train(self, mode=True):
-        """Convert the model into training mode while keep layers freezed."""
-        super(SwinTransformer3D, self).train(mode)
-        self._freeze_stages()
+    # def train(self, mode=True):
+    #     """Convert the model into training mode while keep layers freezed."""
+    #     super(SwinTransformer3D, self).train(mode)
+    #     self._freeze_stages()
 
 
   ### todo: inflate weight, init weight

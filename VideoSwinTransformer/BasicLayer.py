@@ -103,7 +103,6 @@ class BasicLayer(tf.keras.Model):
 
 
         if self.downsample is not None:
-            print("basic down", self.compute_mask_info["input_shape"])
             x = self.downsample(x)
         x = tf.transpose(x, perm=[0, 4,1,2,3  ])
 

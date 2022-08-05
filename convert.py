@@ -2,6 +2,8 @@ import argparse
 import os
 import sys
 
+i = 1
+
 
 
 import numpy as np
@@ -38,8 +40,10 @@ def conv_transpose(w):
     return w.transpose(2,3,4,1, 0)
     
 def modify_tf_block( tf_component, pt_weight, pt_bias = None, is_attn=False):
+   
+    global i
     in_shape = pt_weight.shape
-    print(tf_component, pt_weight.shape)
+    # print(tf_component, pt_weight.shape)
 
     if isinstance(tf_component, tf.keras.layers.Conv3D) :
       pt_weight = conv_transpose(pt_weight)
@@ -49,30 +53,42 @@ def modify_tf_block( tf_component, pt_weight, pt_bias = None, is_attn=False):
 
     if isinstance(tf_component, (tf.keras.layers.Dense, tf.keras.layers.Conv3D)):
         tf_component.kernel.assign(tf.Variable(pt_weight))
+        print(i)
+        i += 1
+
         if pt_bias is not None:
             tf_component.bias.assign(tf.Variable(pt_bias))
+            print(i)
+            i += 1
         #print("dense/conv3d")
     elif isinstance(tf_component, tf.keras.layers.LayerNormalization):
-        print(tf_component.gamma.shape)
+
         tf_component.gamma.assign(tf.Variable(pt_weight))
+        print(i)
+        i += 1
         tf_component.beta.assign(tf.Variable(pt_bias))
+        print(i)
+        i += 1
         #print("layer norm")
     elif isinstance(tf_component, (tf.Variable)):
         # For regular variables (tf.Variable).
         tf_component.assign(tf.Variable(pt_weight))
+        print(i)
+        i += 1
         #print("variable")
     else:
         #print("else")
         return tf.convert_to_tensor(pt_weight)
+        print(i)
+        i += 1
         
-    #print(in_shape, pt_weight.shape , type(tf_component))
-    #print()
 
     return tf_component
 
 
 def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
   # PatchMerging
+  global i
   for layer in tf_block:
     if isinstance(layer, PatchMerging):
       patch_merging_idx = f"{pt_weights_prefix}.downsample"
@@ -96,7 +112,7 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
 
       if isinstance(outer_layer, SwinTransformerBlock3D):
           for inner_layer in outer_layer.layers:
-
+              print(inner_layer)
               # Layer norm.
               if isinstance(inner_layer, tf.keras.layers.LayerNormalization):
                   #print("layer norm")
@@ -108,9 +124,13 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
                           np_state_dict[f"{layer_norm_prefix}.weight"]
                       )
                   )
+                  print(i)
+                  i += 1  
                   inner_layer.beta.assign(
                       tf.Variable(np_state_dict[f"{layer_norm_prefix}.bias"])
                   )
+                  print(i)
+                  i += 1  
                   layernorm_idx += 1
 
               # Window attention.
@@ -254,7 +274,7 @@ def main(args):
         #print()
     
     #print("Porting successful, serializing TensorFlow model...")
-    save_path = os.path.join(os.getcwd(), f"{args.model_name}_tf.pth")
+    save_path = os.path.join(os.getcwd(), f"tf_weights/{args.model_name}_tf.pth")
 
     _ =  tf_model(input)
     # #print(_.shape)
