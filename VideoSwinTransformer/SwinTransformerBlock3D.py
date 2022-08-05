@@ -1,6 +1,6 @@
 
 import tensorflow as tf
-from keras.layers import LayerNormalization
+from tensorflow.keras.layers import LayerNormalization
 import numpy as np
 
 from .WindowAttention3D import WindowAttention3D

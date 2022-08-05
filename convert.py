@@ -35,11 +35,11 @@ def parse_args():
     return parser.parse_args()
 
 def conv_transpose(w):
-    return w.transpose(2, 4, 3, 1, 0)
+    return w.transpose(2,3,4,1, 0)
     
 def modify_tf_block( tf_component, pt_weight, pt_bias = None, is_attn=False):
     in_shape = pt_weight.shape
-    
+    print(tf_component, pt_weight.shape)
 
     if isinstance(tf_component, tf.keras.layers.Conv3D) :
       pt_weight = conv_transpose(pt_weight)
@@ -53,6 +53,7 @@ def modify_tf_block( tf_component, pt_weight, pt_bias = None, is_attn=False):
             tf_component.bias.assign(tf.Variable(pt_bias))
         #print("dense/conv3d")
     elif isinstance(tf_component, tf.keras.layers.LayerNormalization):
+        print(tf_component.gamma.shape)
         tf_component.gamma.assign(tf.Variable(pt_weight))
         tf_component.beta.assign(tf.Variable(pt_bias))
         #print("layer norm")
@@ -208,7 +209,7 @@ def main(args):
 
     pt_model.load_state_dict(new_state_dict) 
 
-    # dummy_x = torch.rand(1, 3, 32, 224, 224)
+    # dummy_x = torch.rand(1, 3, 8, 224, 224)
     # logits = pt_model(dummy_x)
     # #print(logits.shape)
 
