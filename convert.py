@@ -1,9 +1,10 @@
+import json
 import argparse
 import os
 import sys
 
 i = 1
-
+model_layers = {}
 
 
 import numpy as np
@@ -39,7 +40,7 @@ def parse_args():
 def conv_transpose(w):
     return w.transpose(2,3,4,1, 0)
     
-def modify_tf_block( tf_component, pt_weight, pt_bias = None, is_attn=False):
+def modify_tf_block( tf_component, pt_weight,  pt_bias = None, is_attn=False, wn=None, bn=None):
    
     global i
     in_shape = pt_weight.shape
@@ -55,32 +56,38 @@ def modify_tf_block( tf_component, pt_weight, pt_bias = None, is_attn=False):
         tf_component.kernel.assign(tf.Variable(pt_weight))
         print(i)
         i += 1
-
+        model_layers[wn] = tf_component.kernel.name
         if pt_bias is not None:
             tf_component.bias.assign(tf.Variable(pt_bias))
             print(i)
             i += 1
+            model_layers[bn] = tf_component.bias.name
         #print("dense/conv3d")
     elif isinstance(tf_component, tf.keras.layers.LayerNormalization):
 
         tf_component.gamma.assign(tf.Variable(pt_weight))
         print(i)
         i += 1
+        model_layers[wn] = tf_component.gamma.name
         tf_component.beta.assign(tf.Variable(pt_bias))
         print(i)
         i += 1
+        model_layers[bn] = tf_component.beta.name
         #print("layer norm")
     elif isinstance(tf_component, (tf.Variable)):
         # For regular variables (tf.Variable).
         tf_component.assign(tf.Variable(pt_weight))
         print(i)
         i += 1
+        model_layers[wn] = tf_component.name
         #print("variable")
     else:
         #print("else")
-        return tf.convert_to_tensor(pt_weight)
-        print(i)
+        print("else",i)
         i += 1
+        model_layers[wn] = tf_component.name
+        return tf.convert_to_tensor(pt_weight)
+        
         
 
     return tf_component
@@ -94,11 +101,15 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
       patch_merging_idx = f"{pt_weights_prefix}.downsample"
   
       layer.reduction = modify_tf_block( layer.reduction,
-                          np_state_dict[f"{patch_merging_idx}.reduction.weight"])
+                          np_state_dict[f"{patch_merging_idx}.reduction.weight"] , wn = f"{patch_merging_idx}.reduction.weight")
       
       layer.norm = modify_tf_block( layer.norm,
                         np_state_dict[f"{patch_merging_idx}.norm.weight"],
-                        np_state_dict[f"{patch_merging_idx}.norm.bias"])
+                        np_state_dict[f"{patch_merging_idx}.norm.bias"],
+                        
+                        wn = f"{patch_merging_idx}.norm.weight",
+                        bn = f"{patch_merging_idx}.norm.bias"
+                        )
       
   # Swin Layers
       # Swin layers.
@@ -112,7 +123,7 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
 
       if isinstance(outer_layer, SwinTransformerBlock3D):
           for inner_layer in outer_layer.layers:
-              print(inner_layer)
+        
               # Layer norm.
               if isinstance(inner_layer, tf.keras.layers.LayerNormalization):
                   #print("layer norm")
@@ -125,12 +136,17 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
                       )
                   )
                   print(i)
-                  i += 1  
+                  i += 1
+
+                  model_layers[f"{layer_norm_prefix}.weight"] = inner_layer.gamma.name 
+
+
                   inner_layer.beta.assign(
                       tf.Variable(np_state_dict[f"{layer_norm_prefix}.bias"])
                   )
                   print(i)
                   i += 1  
+                  model_layers[f"{layer_norm_prefix}.bias"] = inner_layer.beta.name 
                   layernorm_idx += 1
 
               # Window attention.
@@ -144,7 +160,8 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
                           inner_layer.relative_position_bias_table,
                           np_state_dict[
                               f"{attn_prefix}.relative_position_bias_table"
-                          ],
+                          ] ,
+                          wn =f"{attn_prefix}.relative_position_bias_table" ,
                       )
                   )
                   inner_layer.relative_position_index = (
@@ -153,6 +170,7 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
                           np_state_dict[
                               f"{attn_prefix}.relative_position_index"
                           ],
+                          wn = f"{attn_prefix}.relative_position_index"
                       )
                   )
 
@@ -161,6 +179,8 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
                       inner_layer.qkv,
                       np_state_dict[f"{attn_prefix}.qkv.weight"],
                       np_state_dict[f"{attn_prefix}.qkv.bias"],
+                      wn = f"{attn_prefix}.qkv.weight",
+                       bn = f"{attn_prefix}.qkv.bias"
                   )
 
                   # Projection.
@@ -168,6 +188,8 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
                       inner_layer.proj,
                       np_state_dict[f"{attn_prefix}.proj.weight"],
                       np_state_dict[f"{attn_prefix}.proj.bias"],
+                      wn = f"{attn_prefix}.proj.weight",
+                      bn = f"{attn_prefix}.proj.bias"
                   )
 
               # MLP.
@@ -184,6 +206,8 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
                               np_state_dict[
                                   f"{mlp_prefix}.fc{mlp_layer_idx}.bias"
                               ],
+                              wn =  f"{mlp_prefix}.fc{mlp_layer_idx}.weight" ,
+                              bn =  f"{mlp_prefix}.fc{mlp_layer_idx}.bias"
                           )
                           mlp_layer_idx += 1
 
@@ -246,15 +270,19 @@ def main(args):
     #print("Beginning parameter porting process...")
 
     #projection
-    tf_model.projection.layers[0] = modify_tf_block(
-            tf_model.projection.layers[0],
+    tf_model.projection.layers[0] = modify_tf_block(tf_model.projection.layers[0]
+            ,
             np_state_dict["patch_embed.proj.weight"],
-            np_state_dict["patch_embed.proj.bias"])
+            np_state_dict["patch_embed.proj.bias"],
+            bn = "patch_embed.proj.bias",
+            wn  = "patch_embed.proj.weight")
     
     tf_model.projection.layers[1] = modify_tf_block(
         tf_model.projection.layers[1],
         np_state_dict["patch_embed.norm.weight"],
-        np_state_dict["patch_embed.norm.bias"])
+        np_state_dict["patch_embed.norm.bias"],
+        wn = "patch_embed.norm.weight",
+        bn = "patch_embed.norm.bias")
     
     # layer_normalization
 
@@ -263,7 +291,9 @@ def main(args):
     tf_model.layers[layer_normalization_idx] = modify_tf_block(
         tf_model.layers[layer_normalization_idx] ,
         np_state_dict["norm.weight"],
-        np_state_dict["norm.bias"])
+        np_state_dict["norm.bias"],
+        wn = "norm.weight",
+        bn = "norm.bias")
     
     # swin layers
     for i in range(2, len(tf_model.layers) - 1):
@@ -286,4 +316,6 @@ if __name__ == "__main__":
     args = parse_args()
     main(args)
 
+    with open('data.json', 'w') as fp:
+        json.dump(model_layers, fp)
     
