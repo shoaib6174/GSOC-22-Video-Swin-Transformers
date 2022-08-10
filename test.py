@@ -35,4 +35,4 @@ if __name__ == "__main__":
 
 
 
-   swin.save("weights/model")
+   # swin.save("weights/model")

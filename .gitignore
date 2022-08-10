@@ -1,5 +1,6 @@
 VideoSwinTransformer/__pycache__
 swin_tiny_patch244_window877_kinetics400_1k.pth
 .ipynb_checkpoints/
+weights/
 swin_tiny_patch244_window877_kinetics400_1k_tf.pth
 swin_tiny_patch244_window877_kinetics400_1k_tf.pth/
