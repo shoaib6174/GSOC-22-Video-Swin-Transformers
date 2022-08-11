@@ -1,4 +1,4 @@
-from keras.layers import Dropout , LayerNormalization
+from tensorflow.keras.layers import Dropout , LayerNormalization
 import tensorflow as tf
 import numpy as np
 from .DropPath import DropPath
@@ -7,7 +7,7 @@ from .PatchMerging import  PatchMerging
 from .BasicLayer import BasicLayer
 from .PatchEmbed3D import PatchEmbed3D
 
-from keras.layers import  Conv3D
+from tensorflow.keras.layers import  Conv3D
 
 class SwinTransformer3D(tf.keras.Model):
     def __init__(self, input_shape = (2, 8, 224,224,3), pretrained=None,

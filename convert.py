@@ -257,7 +257,7 @@ def main(args):
     # logits = pt_model(dummy_x)
     # #print(logits.shape)
 
-    input = tf.random.normal((1,8, 224,224, 3), dtype='float64')
+    input = tf.random.normal((1,3, 8, 224,224), dtype='float64')
     tf_model = SwinTransformer3D(**cfg)
     _ =  tf_model(input)
 
@@ -304,12 +304,12 @@ def main(args):
         #print()
     
     #print("Porting successful, serializing TensorFlow model...")
-    save_path = os.path.join(os.getcwd(), f"tf_weights/{args.model_name}_tf.pth")
+    save_path = os.path.join(os.getcwd(), f"{args.model_name}_tf")
 
     _ =  tf_model(input)
-    # #print(_.shape)
+
     tf_model.save(save_path)
-    #print(f"TensorFlow model serialized to: {save_path}...")
+
 
 
 if __name__ == "__main__":

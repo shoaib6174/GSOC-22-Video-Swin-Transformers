@@ -1,5 +1,5 @@
 import tensorflow as tf
-from keras.layers import Dense, LayerNormalization 
+from tensorflow.keras.layers import Dense, LayerNormalization 
 
 class PatchMerging(tf.keras.layers.Layer):
     def __init__(self, dim, shape_of_input, norm_layer=LayerNormalization):

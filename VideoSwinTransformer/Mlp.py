@@ -1,4 +1,4 @@
-from keras.layers import Dense, Dropout
+from tensorflow.keras.layers import Dense, Dropout
 import tensorflow as tf
 
 class Mlp(tf.keras.Model):

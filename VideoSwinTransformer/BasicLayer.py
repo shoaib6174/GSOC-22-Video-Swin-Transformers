@@ -3,7 +3,7 @@ from scipy.fftpack import shift
 import tensorflow as tf
 import numpy as np
 
-from keras.layers import LayerNormalization
+from tensorflow.keras.layers import LayerNormalization
 from tensorflow.python.ops.gen_math_ops import imag
 
 from .SwinTransformerBlock3D import SwinTransformerBlock3D
