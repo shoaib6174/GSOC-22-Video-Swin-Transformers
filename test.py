@@ -22,7 +22,7 @@ if __name__ == "__main__":
    
 
    #print(numpy.version)
-   input_shape = (2,8,32, 32,3)
+   input_shape = (2,3, 8,32, 32)
    x = tf.keras.Input((8,32,32,3))
    swin = SwinTransformer3D(input_shape = x.shape)
    x = tf.random.normal(input_shape,   dtype="float32")
