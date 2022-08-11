@@ -44,12 +44,16 @@ class Mlp(nn.Module):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
+        print('dense',hidden_features, in_features)
+
         self.fc1 = nn.Linear(in_features, hidden_features)
         self.act = act_layer()
         self.fc2 = nn.Linear(hidden_features, out_features)
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
+        print("x", x.shape)
+
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
