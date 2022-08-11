@@ -8,7 +8,6 @@ class Mlp(tf.keras.Model):
         hidden_features = hidden_features or in_features
         self.fc1 = Dense(hidden_features)
         self.act = act_layer
-        print(out_features, "Dense")
         self.fc2 = Dense(out_features)
         self.drop = Dropout(drop)
 
@@ -16,7 +15,6 @@ class Mlp(tf.keras.Model):
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
-        print("x", x.shape)
         x = self.fc2(x)
         x = self.drop(x)
         return x
