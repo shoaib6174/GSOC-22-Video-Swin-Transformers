@@ -32,7 +32,7 @@ class BasicLayer(tf.keras.Model):
 
     def __init__(self,
                  dim,
-                 input_shape,
+                 shape_of_input,
                  depth,
                  num_heads,
                  window_size=(1,7,7),
@@ -50,10 +50,10 @@ class BasicLayer(tf.keras.Model):
         self.shift_size = tuple(i // 2 for i in window_size)
         self.depth = depth
         self.use_checkpoint = use_checkpoint
-        self.input_shapes = input_shape
+        self.shape_of_input = shape_of_input
 
         self.compute_mask_info = {
-            "input_shape": self.input_shapes,
+            "shape_of_input": self.shape_of_input,
             "window_size": self.window_size, 
             "shift_size": self.shift_size
         }

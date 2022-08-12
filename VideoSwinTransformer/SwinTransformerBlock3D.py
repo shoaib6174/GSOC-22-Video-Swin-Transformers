@@ -84,7 +84,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
 
         # compute mask
-        B, C, D, H, W = self.compute_mask_info["input_shape"]
+        B, C, D, H, W = self.compute_mask_info["shape_of_input"]
         mask_window_size, mask_shift_size = get_window_size((D,H,W), self.compute_mask_info["window_size"], self.compute_mask_info["shift_size"])
         
         Dp = int(tf.math.ceil(D/ mask_window_size[0])) * mask_window_size[0]
@@ -103,7 +103,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         
         B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
         
-        b, c, d, h ,w = self.compute_mask_info['input_shape']
+        b, c, d, h ,w = self.compute_mask_info['shape_of_input']
 
         
 

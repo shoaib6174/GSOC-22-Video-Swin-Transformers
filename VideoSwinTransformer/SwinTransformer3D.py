@@ -10,7 +10,7 @@ from .PatchEmbed3D import PatchEmbed3D
 from tensorflow.keras.layers import  Conv3D
 
 class SwinTransformer3D(tf.keras.Model):
-    def __init__(self, input_shape = (2, 8, 224,224,3), pretrained=None,
+    def __init__(self, shape_of_input = (2, 8, 224,224,3), pretrained=None,
                  pretrained2d=True,
                  patch_size=(4,4,4),
                  in_chans=3,
@@ -40,7 +40,7 @@ class SwinTransformer3D(tf.keras.Model):
         self.window_size = window_size
         self.patch_size = patch_size
         self.mlp_ratio = mlp_ratio
-        self.input_shapes = list(input_shape)
+        self.shape_of_input = list(shape_of_input)
 
 
        
@@ -73,15 +73,15 @@ class SwinTransformer3D(tf.keras.Model):
 
             if i_layer == 0:
  
-                self.input_shapes[3] , self.input_shapes[4] = int(input_shape[2] // 4) , int(input_shape[3] // 4)
+                self.input_shapes[3] , self.input_shapes[4] = int(shape_of_input[2] // 4) , int(shape_of_input[3] // 4)
                 
             else:
-                self.input_shapes[3] = ceil(self.input_shapes[3] / 2 )
-                self.input_shapes[4] = ceil(self.input_shapes[4] / 2)
+                self.shape_of_input[3] = ceil(self.shape_of_input[3] / 2 )
+                self.shape_of_input[4] = ceil(self.shape_of_input[4] / 2)
 
    
             self.layers3D.append(BasicLayer(dim= int(embed_dim * 2 ** i_layer),
-                                                input_shape = tuple(self.input_shapes),
+                                                input_shape = tuple(self.shape_of_input),
 
                                                 depth=depths[i_layer],
                                                 num_heads=num_heads[i_layer],
