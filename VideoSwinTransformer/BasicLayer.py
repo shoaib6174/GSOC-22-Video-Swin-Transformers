@@ -79,7 +79,7 @@ class BasicLayer(tf.keras.Model):
         
         self.downsample = downsample
         if self.downsample is not None:
-            self.downsample = downsample(dim=dim, norm_layer=norm_layer, shape_of_input = self.compute_mask_info['input_shape'])
+            self.downsample = downsample(dim=dim, norm_layer=norm_layer, shape_of_input = self.compute_mask_info['shape_of_input'])
 
     def call(self, x):
         """ Forward function.

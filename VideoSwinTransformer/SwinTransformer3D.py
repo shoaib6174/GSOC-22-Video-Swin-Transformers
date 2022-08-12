@@ -63,17 +63,16 @@ class SwinTransformer3D(tf.keras.Model):
         dpr = [x for x in np.linspace(0., drop_path_rate, sum(depths))] # stochastic depth decay rule
 
         # build layers
-        self.input_shapes = list(self.input_shapes)
-        self.input_shapes[2] = int(self.input_shapes[1] / 4)
+        self.shape_of_input[2] = int(self.shape_of_input[1] / 4)
         self.layers3D = []
 
         for i_layer in range(self.num_layers):
             
-            self.input_shapes[1] = int(embed_dim * 2 ** i_layer)
+            self.shape_of_input[1] = int(embed_dim * 2 ** i_layer)
 
             if i_layer == 0:
  
-                self.input_shapes[3] , self.input_shapes[4] = int(shape_of_input[2] // 4) , int(shape_of_input[3] // 4)
+                self.shape_of_input[3] , self.shape_of_input[4] = int(shape_of_input[2] // 4) , int(shape_of_input[3] // 4)
                 
             else:
                 self.shape_of_input[3] = ceil(self.shape_of_input[3] / 2 )
@@ -81,7 +80,7 @@ class SwinTransformer3D(tf.keras.Model):
 
    
             self.layers3D.append(BasicLayer(dim= int(embed_dim * 2 ** i_layer),
-                                                input_shape = tuple(self.shape_of_input),
+                                                shape_of_input = tuple(self.shape_of_input),
 
                                                 depth=depths[i_layer],
                                                 num_heads=num_heads[i_layer],
