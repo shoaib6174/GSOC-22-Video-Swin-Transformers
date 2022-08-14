@@ -136,6 +136,9 @@ class SwinTransformer3D(tf.keras.Model):
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
         return x
+    def build_graph(self):
+        x = tf.keras.Input(shape=(3,8,224,224))
+        return tf.keras.Model(inputs=[x], outputs=self.call(x))
 
     # def train(self, mode=True):
     #     """Convert the model into training mode while keep layers freezed."""
