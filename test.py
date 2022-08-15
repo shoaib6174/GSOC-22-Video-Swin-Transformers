@@ -33,8 +33,7 @@ if __name__ == "__main__":
    print("output shape: ",output.shape)
    # print(swin.get_layer("basic_layer").layers)
    
-   print(swin.input)
+   print("saving model \n \n","=============================================")
 
 
-   # print("saving model")
-   # swin.save("weights/model")
+   swin.save("weights/model")

@@ -86,7 +86,7 @@ class BasicLayer(tf.keras.Model):
         Args:
             x: Input feature, tensor size (B, C, D, H, W).
         """
-
+        # print(self.name, x.shape)
 
         # calculate attention mask for SW-MSA
         B, C, D, H, W = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
@@ -98,6 +98,7 @@ class BasicLayer(tf.keras.Model):
 
         for blk in self.blocks:
             x = blk(x)
+
 
         x = tf.reshape(x, [B, D, H, W, -1])
 

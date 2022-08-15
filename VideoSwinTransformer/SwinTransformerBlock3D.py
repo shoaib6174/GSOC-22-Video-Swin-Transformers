@@ -73,6 +73,10 @@ class SwinTransformerBlock3D(tf.keras.Model):
         self.mlp_ratio = mlp_ratio
         self.use_checkpoint=use_checkpoint
         self.compute_mask_info = compute_mask_info
+        
+
+        # delete this
+        self.drop_path_val = drop_path
 
         assert 0 <= self.shift_size[0] < self.window_size[0], "shift_size must in 0-window_size"
         assert 0 <= self.shift_size[1] < self.window_size[1], "shift_size must in 0-window_size"
@@ -92,7 +96,6 @@ class SwinTransformerBlock3D(tf.keras.Model):
         Wp = int(tf.math.ceil(W / mask_window_size[2])) * mask_window_size[2]
 
         self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size)
-
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
@@ -135,14 +138,18 @@ class SwinTransformerBlock3D(tf.keras.Model):
         else:
             shifted_x = x
             attn_mask = None
+        # print("after cyclic sifted_x", shifted_x.shape)
+
         # partition windows
         x_windows = window_partition(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
         # W-MSA/SW-MSA
         attn_windows = self.attn(x_windows, mask=attn_mask)  # B*nW, Wd*Wh*Ww, C
         # merge windows
         attn_windows = tf.reshape( attn_windows ,  [-1, *(window_size+(C,))] )
+        # print( "attn_windows",attn_windows.shape)
         shifted_x = window_reverse(attn_windows, window_size, B, Dp, Hp, Wp)  # B D' H' W' C
         # reverse cyclic shift
+        # print("sifted_x", shifted_x.shape)
         if any(i > 0 for i in self.shift_size):
             x = tf.roll(shifted_x, shift=[self.shift_size[0], self.shift_size[1], self.shift_size[2]], axis=[1, 2, 3]) #?
         else:
@@ -153,7 +160,8 @@ class SwinTransformerBlock3D(tf.keras.Model):
         return x
 
     def forward_part2(self, x):
-
+        # print("drop path part 2", x.shape)
+        # print("forward_part2")
         return self.drop_path(self.mlp(self.norm2(x)))
 
     def call(self, x):
@@ -163,8 +171,16 @@ class SwinTransformerBlock3D(tf.keras.Model):
             mask_matrix: Attention mask for cyclic shift.
         """
 
+        # print(self.name, self.drop_path_val, x.shape)
+
+
         shortcut = x
         x = self.forward_part1(x)
+
+        # print("after 1", x.shape)
+        # print("call")
+
+        # print(self.drop_path, self.drop_path(x))
         x = shortcut + self.drop_path(x)
 
 
