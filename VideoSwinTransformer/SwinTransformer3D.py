@@ -143,7 +143,7 @@ class SwinTransformer3D(tf.keras.Model):
         # print(self.layer_output)
 
         # return x
-        return self.layer_output
+        return self.layer_output , x
 
     def build_graph(self):
         x = tf.keras.Input(shape=(3,8,224,224))
