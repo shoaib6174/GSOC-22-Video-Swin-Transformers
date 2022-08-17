@@ -56,7 +56,6 @@ def modify_tf_block( tf_component, pt_weight,  pt_bias = None, is_attn=False, wn
         tf_component.kernel.assign(tf.Variable(pt_weight))
         #print(i)
 #        i += 1
-        print(tf_component.kernel.name)
         model_layers[wn] = tf_component.kernel.name
         if pt_bias is not None:
             tf_component.bias.assign(tf.Variable(pt_bias))
