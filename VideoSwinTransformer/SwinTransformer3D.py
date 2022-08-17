@@ -123,7 +123,7 @@ class SwinTransformer3D(tf.keras.Model):
     def call(self, x):
         print(" Swin Trnsformer3D input size", x.shape)
         # x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
-        x = self.projection(x)
+        x = self.projection(x, self.layer_output)
         # x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
         self.layer_output["Projection"] = x
