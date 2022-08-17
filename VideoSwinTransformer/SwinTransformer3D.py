@@ -44,18 +44,20 @@ class SwinTransformer3D(tf.keras.Model):
 
         self.layer_output = {}
 
+        self.projection = PatchEmbed3D(patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
+                            norm_layer= norm_layer if self.patch_norm else None)
        
-        self.projection = tf.keras.Sequential(
-            [
-                Conv3D(
-                    embed_dim ,kernel_size = patch_size , strides= patch_size , padding="valid", name= "conv_projection"
-                )
-            ],
-            name = "projection"
-        )   # data_format= "channels_first"
+        # self.projection = tf.keras.Sequential(
+        #     [
+        #         Conv3D(
+        #             embed_dim ,kernel_size = patch_size , strides= patch_size , padding="valid", name= "conv_projection"
+        #         )
+        #     ],
+        #     name = "projection"
+        # )   # data_format= "channels_first"
 
-        if self.patch_norm:
-            self.projection.add(norm_layer(epsilon=1e-5))
+        # if self.patch_norm:
+        #     self.projection.add(norm_layer(epsilon=1e-5))
         
 
         self.pos_drop = Dropout(drop_rate)
@@ -120,9 +122,9 @@ class SwinTransformer3D(tf.keras.Model):
 
     def call(self, x):
         print(" Swin Trnsformer3D input size", x.shape)
-        x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
+        # x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
         x = self.projection(x)
-        x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
+        # x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
         self.layer_output["Projection"] = x
 
