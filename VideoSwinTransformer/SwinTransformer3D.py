@@ -45,7 +45,7 @@ class SwinTransformer3D(tf.keras.Model):
         self.layer_output = {}
 
         self.projection = PatchEmbed3D(patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
-                            norm_layer= norm_layer if self.patch_norm else None, layer_output=self.layer_output)
+                            norm_layer= norm_layer if self.patch_norm else None)
        
         # self.projection = tf.keras.Sequential(
         #     [
