@@ -259,6 +259,9 @@ def main(args):
 
     input = tf.random.normal((1,3, 8, 224,224), dtype='float64')
     tf_model = SwinTransformer3D(**cfg)
+
+    tf_model.compile()  # delete
+
     _ =  tf_model(input)
 
     # #print(_.shape)
@@ -309,6 +312,8 @@ def main(args):
     _ =  tf_model(input)
 
     tf_model.save(save_path)
+    # tf_model.save_weights('./checkpoints/my_checkpoint')
+
 
 
 

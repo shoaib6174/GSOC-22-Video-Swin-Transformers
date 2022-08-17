@@ -42,6 +42,7 @@ class SwinTransformer3D(tf.keras.Model):
         self.mlp_ratio = mlp_ratio
         self.shape_of_input = list(shape_of_input)
 
+        self.layer_output = {}
 
        
         self.projection = tf.keras.Sequential(
@@ -123,19 +124,25 @@ class SwinTransformer3D(tf.keras.Model):
         x = self.projection(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
+        self.layer_output["Projection"] = x
+
 
 
         x = self.pos_drop(x)
 
         for layer in self.layers3D:
             x = layer(x)
+            self.layer_output[layer.name] = x
             
         x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
 
         x = self.norm(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
+        # print(self.layer_output)
 
-        return x
+        # return x
+        return self.layer_output
+
     def build_graph(self):
         x = tf.keras.Input(shape=(3,8,224,224))
         return tf.keras.Model(inputs=[x], outputs=self.call(x))
@@ -144,6 +151,9 @@ class SwinTransformer3D(tf.keras.Model):
     #     """Convert the model into training mode while keep layers freezed."""
     #     super(SwinTransformer3D, self).train(mode)
     #     self._freeze_stages()
+
+    def get_layer_output(self):
+        return self.layer_output
 
 
   ### todo: inflate weight, init weight
