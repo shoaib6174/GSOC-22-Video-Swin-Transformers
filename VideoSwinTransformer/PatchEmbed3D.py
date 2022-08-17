@@ -27,12 +27,15 @@ class PatchEmbed3D(tf.keras.Model):
         x = self.proj(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
-        print(x.shape)
         
         if self.norm is not None:
             
           B, C, D, Wh, Ww = x.shape
-          x  = tf.reshape(x, shape=[B, C, -1])
+          print(x.shape)
+          if B == None:
+            B = 1
+          x  = tf.reshape(x, shape=[B, C, -1]) ### **** change
+          print("-", x.shape)
           x = tf.transpose(x, perm=[0 , 2, 1])   
           x = self.norm(x)
           x   = tf.transpose(x, perm=[0,2,1])

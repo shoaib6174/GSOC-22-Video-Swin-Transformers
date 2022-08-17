@@ -30,7 +30,7 @@ if __name__ == "__main__":
    x  = tf.keras.layers.Input(tensor=x)
 
    output = swin(x, training= False)
-   print("output shape: ",output.shape)
+   # print("output shape: ",output.shape)
    # print(swin.get_layer("basic_layer").layers)
    
    print("saving model \n \n","=============================================")
