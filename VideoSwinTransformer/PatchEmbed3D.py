@@ -1,5 +1,4 @@
 import tensorflow as tf
-
 from tensorflow.keras.layers import  Conv3D
 
 class PatchEmbed3D(tf.keras.Model):
@@ -31,7 +30,6 @@ class PatchEmbed3D(tf.keras.Model):
         if self.norm is not None:
             
           B, C, D, Wh, Ww = x.shape
-          print(x.shape)
           if B == None:
             B = 1
           x  = tf.reshape(x, shape=[B, C, -1]) ### **** change

@@ -140,8 +140,7 @@ class SwinTransformer3D(tf.keras.Model):
 
         x = self.norm(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
-        # print(self.layer_output)
-
+ 
         # return x
         return (self.layer_output , x)
 
