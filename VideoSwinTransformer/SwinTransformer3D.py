@@ -27,7 +27,8 @@ class SwinTransformer3D(tf.keras.Model):
                  norm_layer= LayerNormalization,
                  patch_norm=False,
                  frozen_stages=-1,
-                 use_checkpoint=False):
+                 use_checkpoint=False,
+                 isTest =False):    ## ****** remove it later
       
         super().__init__()
 
@@ -42,22 +43,12 @@ class SwinTransformer3D(tf.keras.Model):
         self.mlp_ratio = mlp_ratio
         self.shape_of_input = list(shape_of_input)
 
-        self.layer_output = {}
+        self.isTest = isTest ## remove later
 
         self.projection = PatchEmbed3D(patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
-                            norm_layer= norm_layer if self.patch_norm else None)
+                            norm_layer= norm_layer if self.patch_norm else None) ## ***** make is patchembed and change the conver function
        
-        # self.projection = tf.keras.Sequential(
-        #     [
-        #         Conv3D(
-        #             embed_dim ,kernel_size = patch_size , strides= patch_size , padding="valid", name= "conv_projection"
-        #         )
-        #     ],
-        #     name = "projection"
-        # )   # data_format= "channels_first"
 
-        # if self.patch_norm:
-        #     self.projection.add(norm_layer(epsilon=1e-5))
         
 
         self.pos_drop = Dropout(drop_rate)
@@ -121,28 +112,29 @@ class SwinTransformer3D(tf.keras.Model):
 
 
     def call(self, x):
-        print(" Swin Trnsformer3D input size", x.shape)
-        # x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
         x = self.projection(x)
-        # x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
 
-        self.layer_output["Projection"] = x
-
-
-
+        layer_out = {}
+        layer_out["PatchEmbed"] = x[:1,:1,:1,:1,:10]
+        
         x = self.pos_drop(x)
 
+        i = 1
         for layer in self.layers3D:
             x = layer(x)
-            self.layer_output[layer.name] = x
-            
-        x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
+            layer_out[f"basic layer{i}"] = x[:1,:1,:1,:1,:10]
+            i +=1
 
+        x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
         x = self.norm(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
- 
-        # return x
-        return (self.layer_output , x)
+        
+        layer_out["Final Output"] = x[:1,:1,:1,:1,:10]
+
+        if self.isTest:                 # remove later
+            return layer_out, x
+        else:
+            return x
 
     def build_graph(self):
         x = tf.keras.Input(shape=(3,8,224,224))
@@ -152,9 +144,3 @@ class SwinTransformer3D(tf.keras.Model):
     #     """Convert the model into training mode while keep layers freezed."""
     #     super(SwinTransformer3D, self).train(mode)
     #     self._freeze_stages()
-
-    def get_layer_output(self):
-        return self.layer_output
-
-
-  ### todo: inflate weight, init weight

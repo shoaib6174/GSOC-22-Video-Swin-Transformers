@@ -515,7 +515,8 @@ class SwinTransformer3D_pt(nn.Module):
                  norm_layer=nn.LayerNorm,
                  patch_norm=False,
                  frozen_stages=-1,
-                 use_checkpoint=False):
+                 use_checkpoint=False, 
+                 isTest =False):    ## ****** remove it later
         super().__init__()
 
         self.pretrained = pretrained
@@ -526,6 +527,8 @@ class SwinTransformer3D_pt(nn.Module):
         self.frozen_stages = frozen_stages
         self.window_size = window_size
         self.patch_size = patch_size
+
+        self.isTest = isTest
 
         # split image into non-overlapping patches
         self.patch_embed = PatchEmbed3D(
@@ -664,17 +667,28 @@ class SwinTransformer3D_pt(nn.Module):
     def forward(self, x):
         """Forward function."""
         x = self.patch_embed(x)
+        layer_out = {}
 
+        layer_out["PatchEmbed"] = x[:1,:1,:1,:1,:10]
         x = self.pos_drop(x)
+
+        i = 1
 
         for layer in self.layers:
             x = layer(x.contiguous())
+            layer_out[f"basic layer{i}"] = x[:1,:1,:1,:1,:10]
+            i+=1
 
         x = rearrange(x, 'n c d h w -> n d h w c')
         x = self.norm(x)
         x = rearrange(x, 'n d h w c -> n c d h w')
+        
+        layer_out["Final Output"] = x[:1,:1,:1,:1,:10]
 
-        return x
+        if self.isTest:                 # remove later
+            return layer_out, x
+        else:
+            return x
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""
