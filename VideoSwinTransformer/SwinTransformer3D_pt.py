@@ -671,6 +671,7 @@ class SwinTransformer3D_pt(nn.Module):
 
         layer_out["PatchEmbed"] = x
         x = self.pos_drop(x)
+        layer_out["drop_out"] = x
 
         i = 1
 
