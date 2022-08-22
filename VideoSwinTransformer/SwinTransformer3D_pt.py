@@ -669,21 +669,21 @@ class SwinTransformer3D_pt(nn.Module):
         x = self.patch_embed(x)
         layer_out = {}
 
-        layer_out["PatchEmbed"] = x[:1,:1,:1,:1,:10]
+        layer_out["PatchEmbed"] = x
         x = self.pos_drop(x)
 
         i = 1
 
         for layer in self.layers:
             x = layer(x.contiguous())
-            layer_out[f"basic layer{i}"] = x[:1,:1,:1,:1,:10]
+            layer_out[f"basic layer{i}"] = x
             i+=1
 
         x = rearrange(x, 'n c d h w -> n d h w c')
         x = self.norm(x)
         x = rearrange(x, 'n d h w c -> n c d h w')
         
-        layer_out["Final Output"] = x[:1,:1,:1,:1,:10]
+        layer_out["Final Output"] = x
 
         if self.isTest:                 # remove later
             return layer_out, x

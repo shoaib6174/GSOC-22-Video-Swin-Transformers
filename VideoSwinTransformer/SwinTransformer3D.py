@@ -115,21 +115,21 @@ class SwinTransformer3D(tf.keras.Model):
         x = self.projection(x)
 
         layer_out = {}
-        layer_out["PatchEmbed"] = x[:1,:1,:1,:1,:10]
+        layer_out["PatchEmbed"] = x
         
         x = self.pos_drop(x)
 
         i = 1
         for layer in self.layers3D:
             x = layer(x)
-            layer_out[f"basic layer{i}"] = x[:1,:1,:1,:1,:10]
+            layer_out[f"basic layer{i}"] = x
             i +=1
 
         x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
         x = self.norm(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
         
-        layer_out["Final Output"] = x[:1,:1,:1,:1,:10]
+        layer_out["Final Output"] = x
 
         if self.isTest:                 # remove later
             return layer_out, x
