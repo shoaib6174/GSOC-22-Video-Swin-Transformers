@@ -118,6 +118,7 @@ class SwinTransformer3D(tf.keras.Model):
         layer_out["PatchEmbed"] = x
         
         x = self.pos_drop(x)
+        layer_out["drop_out"] = x
 
         i = 1
         for layer in self.layers3D:
