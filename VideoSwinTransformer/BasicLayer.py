@@ -92,8 +92,8 @@ class BasicLayer(tf.keras.Model):
         B, C, D, H, W = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
 
         x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
-        print()
-        print("self.compute_mask_info", self.compute_mask_info)
+        # print()
+        # print("self.compute_mask_info", self.compute_mask_info)
 
 
 

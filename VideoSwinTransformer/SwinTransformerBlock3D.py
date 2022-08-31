@@ -97,8 +97,8 @@ class SwinTransformerBlock3D(tf.keras.Model):
         Wp = int(tf.math.ceil(W / mask_window_size[2])) * mask_window_size[2]
 
         self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size)
-        print("compute mask parameters", (Dp, Hp, Wp, mask_window_size, mask_shift_size))
-        print("attn_mask", self.attn_mask.shape)
+        # print("compute mask parameters", (Dp, Hp, Wp, mask_window_size, mask_shift_size))
+        # print("attn_mask", self.attn_mask.shape)
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)

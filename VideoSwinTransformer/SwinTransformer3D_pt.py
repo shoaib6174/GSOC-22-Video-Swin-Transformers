@@ -95,7 +95,7 @@ def window_reverse(windows, window_size, B, D, H, W):
 
 def get_window_size(x_size, window_size, shift_size=None):
 
-    print("get_window_size parameters",x_size, window_size, shift_size)
+    # print("get_window_size parameters",x_size, window_size, shift_size)
 
     use_window_size = list(window_size)
     if shift_size is not None:
@@ -109,7 +109,7 @@ def get_window_size(x_size, window_size, shift_size=None):
     if shift_size is None:
         return tuple(use_window_size)
     else:
-        print(tuple(use_window_size), tuple(use_shift_size))
+        # print(tuple(use_window_size), tuple(use_shift_size))
 
         return tuple(use_window_size), tuple(use_shift_size)
 
@@ -420,7 +420,7 @@ class BasicLayer(nn.Module):
             x: Input feature, tensor size (B, C, D, H, W).
         """
         # calculate attention mask for SW-MSA
-        print("")
+        # print("")
 
         B, C, D, H, W = x.shape
         window_size, shift_size = get_window_size((D,H,W), self.window_size, self.shift_size)
@@ -431,8 +431,8 @@ class BasicLayer(nn.Module):
         attn_mask = compute_mask(Dp, Hp, Wp, window_size, shift_size, x.device)
 
 
-        print("attn_mask", attn_mask.size)
-        print("compute mask parameters", (Dp, Hp, Wp, window_size, shift_size))
+        # print("attn_mask", attn_mask.size)
+        # print("compute mask parameters", (Dp, Hp, Wp, window_size, shift_size))
 
 
 
