@@ -1,6 +1,9 @@
 import tensorflow as tf
 def get_window_size(x_size, window_size, shift_size=None):
     #print("get window",x_size, window_size, shift_size)
+
+    print("get_window_size parameters",x_size, window_size, shift_size)
+
     use_window_size = list(window_size)
     if shift_size is not None:
         use_shift_size = list(shift_size)
@@ -15,4 +18,5 @@ def get_window_size(x_size, window_size, shift_size=None):
     if shift_size is None:
         return tuple(use_window_size)
     else:
+        print(tuple(use_window_size), tuple(use_shift_size))
         return tuple(use_window_size), tuple(use_shift_size)
