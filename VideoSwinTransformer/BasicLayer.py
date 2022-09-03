@@ -46,6 +46,8 @@ class BasicLayer(tf.keras.Model):
                  downsample=None,
                  use_checkpoint=False):
         super().__init__()
+
+
         self.window_size = window_size
         self.shift_size = tuple(i // 2 for i in window_size)
         self.depth = depth
@@ -86,23 +88,16 @@ class BasicLayer(tf.keras.Model):
         Args:
             x: Input feature, tensor size (B, C, D, H, W).
         """
-        # print(self.name, x.shape)
 
         # calculate attention mask for SW-MSA
         B, C, D, H, W = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
 
         x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
-        # print()
-        # print("self.compute_mask_info", self.compute_mask_info)
-
-
 
         for blk in self.blocks:
             x = blk(x)
 
-
         x = tf.reshape(x, [B, D, H, W, -1])
-
 
         if self.downsample is not None:
             x = self.downsample(x)

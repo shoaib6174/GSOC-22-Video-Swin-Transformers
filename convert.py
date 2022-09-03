@@ -44,7 +44,7 @@ def modify_tf_block( tf_component, pt_weight,  pt_bias = None, is_attn=False, wn
    
     global i
     in_shape = pt_weight.shape
-    # print(tf_component, pt_weight.shape)
+
 
     if isinstance(tf_component, tf.keras.layers.Conv3D) :
       pt_weight = conv_transpose(pt_weight)
@@ -54,41 +54,31 @@ def modify_tf_block( tf_component, pt_weight,  pt_bias = None, is_attn=False, wn
 
     if isinstance(tf_component, (tf.keras.layers.Dense, tf.keras.layers.Conv3D)):
         tf_component.kernel.assign(tf.Variable(pt_weight))
-        #print(i)
-#        i += 1
+
         model_layers[wn] = tf_component.kernel.name
         if pt_bias is not None:
             tf_component.bias.assign(tf.Variable(pt_bias))
-            # print(i)
-            # i += 1
+
             model_layers[bn] = tf_component.bias.name
         #print("dense/conv3d")
     elif isinstance(tf_component, tf.keras.layers.LayerNormalization):
 
         tf_component.gamma.assign(tf.Variable(pt_weight))
-        #print(i)
-#        i += 1
+
         model_layers[wn] = tf_component.gamma.name
         tf_component.beta.assign(tf.Variable(pt_bias))
-        #print(i)
-#        i += 1
+
         model_layers[bn] = tf_component.beta.name
-        #print("layer norm")
     elif isinstance(tf_component, (tf.Variable)):
         # For regular variables (tf.Variable).
         tf_component.assign(tf.Variable(pt_weight))
-        #print(i)
-#        i += 1
+
         model_layers[wn] = tf_component.name
-        #print("variable")
+
     else:
-        #print("else")
-        # print("else",i)
-        # i += 1
+
         model_layers[wn] = tf_component.name
         return tf.convert_to_tensor(pt_weight)
-        
-        
 
     return tf_component
 

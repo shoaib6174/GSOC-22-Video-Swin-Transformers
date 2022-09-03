@@ -4,13 +4,11 @@ from tensorflow.keras.layers import  Conv3D
 class PatchEmbed3D(tf.keras.Model):
     def __init__(self, patch_size=(2, 4, 4), in_chans=3, embed_dim=96, norm_layer=None ):
         super().__init__(name='projection')
-
         
         self.patch_size = patch_size
         self.in_chans = in_chans
         self.embed_dim = embed_dim
 
-        
         self.proj = Conv3D(embed_dim, kernel_size=patch_size,
                            strides=patch_size, name='embed_proj')
         

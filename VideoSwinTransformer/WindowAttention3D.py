@@ -45,7 +45,6 @@ class WindowAttention3D(tf.keras.layers.Layer):
 
 
     def call(self, x, mask=None):
-        # #print(x.shape, "attention")
         B_, N, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2]
         qkv = tf.transpose(tf.reshape(self.qkv(
             x), shape=[-1, N, 3, self.num_heads, C // self.num_heads]), perm=[2, 0, 3, 1, 4])
@@ -60,7 +59,6 @@ class WindowAttention3D(tf.keras.layers.Layer):
         attn = attn + tf.expand_dims(relative_position_bias, axis=0)
 
         if mask is not None:
-            # print("Mask is not None")
 
             nW = tf.shape(mask)[0]  # tf.shape(mask)[0]
             attn = tf.reshape(attn, shape=[-1, nW, self.num_heads, N, N]) + tf.cast(

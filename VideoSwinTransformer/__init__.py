@@ -1,4 +1,4 @@
-from .SwinTransformerBlock3D import SwinTransformerBlock3D
+from .SwinTransformerBlock3D import SwinTransformerBlock3D, compute_mask
 from .WindowAttention3D import WindowAttention3D
 from .DropPath import DropPath
 # from .Mlp import Mlp

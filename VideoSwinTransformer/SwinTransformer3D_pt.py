@@ -42,9 +42,9 @@ class Mlp(nn.Module):
 
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
+
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        # print('dense',hidden_features, in_features)
 
         self.fc1 = nn.Linear(in_features, hidden_features)
         self.act = act_layer()
@@ -52,7 +52,6 @@ class Mlp(nn.Module):
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
-        # print("x", x.shape)
 
         x = self.fc1(x)
         x = self.act(x)
@@ -95,7 +94,6 @@ def window_reverse(windows, window_size, B, D, H, W):
 
 def get_window_size(x_size, window_size, shift_size=None):
 
-    # print("get_window_size parameters",x_size, window_size, shift_size)
 
     use_window_size = list(window_size)
     if shift_size is not None:
@@ -109,8 +107,6 @@ def get_window_size(x_size, window_size, shift_size=None):
     if shift_size is None:
         return tuple(use_window_size)
     else:
-        # print(tuple(use_window_size), tuple(use_shift_size))
-
         return tuple(use_window_size), tuple(use_shift_size)
 
 
@@ -130,6 +126,7 @@ class WindowAttention3D(nn.Module):
     def __init__(self, dim, window_size, num_heads, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
 
         super().__init__()
+
         self.dim = dim
         self.window_size = window_size  # Wd, Wh, Ww
         self.num_heads = num_heads
@@ -235,7 +232,6 @@ class SwinTransformerBlock3D(nn.Module):
         self.attn = WindowAttention3D(
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
-
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
@@ -348,6 +344,7 @@ def compute_mask(D, H, W, window_size, shift_size, device):
             for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2],None):
                 img_mask[:, d, h, w, :] = cnt
                 cnt += 1
+
     mask_windows = window_partition(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
     mask_windows = mask_windows.squeeze(-1)  # nW, ws[0]*ws[1]*ws[2]
     attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
@@ -420,8 +417,6 @@ class BasicLayer(nn.Module):
             x: Input feature, tensor size (B, C, D, H, W).
         """
         # calculate attention mask for SW-MSA
-        # print("")
-
         B, C, D, H, W = x.shape
         window_size, shift_size = get_window_size((D,H,W), self.window_size, self.shift_size)
         x = rearrange(x, 'b c d h w -> b d h w c')
@@ -429,12 +424,6 @@ class BasicLayer(nn.Module):
         Hp = int(np.ceil(H / window_size[1])) * window_size[1]
         Wp = int(np.ceil(W / window_size[2])) * window_size[2]
         attn_mask = compute_mask(Dp, Hp, Wp, window_size, shift_size, x.device)
-
-
-        # print("attn_mask", attn_mask.size)
-        # print("compute mask parameters", (Dp, Hp, Wp, window_size, shift_size))
-
-
 
         for blk in self.blocks:
             x = blk(x, attn_mask)
