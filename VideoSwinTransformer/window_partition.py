@@ -10,6 +10,8 @@ def window_partition(x, window_size):
     Returns:
         windows: (B*num_windows, window_size*window_size, C)
     """
+    # print("window_partition", x.shape, window_size)
+
     B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2], tf.shape(x)[3] , tf.shape(x)[4] 
     
     x = tf.reshape(x, [B, D // window_size[0], window_size[0], H // window_size[1], window_size[1], W // window_size[2], window_size[2], C])

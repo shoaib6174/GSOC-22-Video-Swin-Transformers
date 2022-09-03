@@ -239,6 +239,8 @@ class SwinTransformerBlock3D(nn.Module):
 
     def forward_part1(self, x, mask_matrix):
         B, D, H, W, C = x.shape
+        # print("forward path", (D,H,W), self.window_size, self.shift_size)
+
         window_size, shift_size = get_window_size((D, H, W), self.window_size, self.shift_size)
 
         x = self.norm1(x)
@@ -418,7 +420,9 @@ class BasicLayer(nn.Module):
         """
         # calculate attention mask for SW-MSA
         B, C, D, H, W = x.shape
+        # print("\n \nbasic layer call", x.shape)
         window_size, shift_size = get_window_size((D,H,W), self.window_size, self.shift_size)
+
         x = rearrange(x, 'b c d h w -> b d h w c')
         Dp = int(np.ceil(D / window_size[0])) * window_size[0]
         Hp = int(np.ceil(H / window_size[1])) * window_size[1]

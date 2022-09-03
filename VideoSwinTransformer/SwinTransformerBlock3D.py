@@ -15,10 +15,9 @@ from .get_window_size import get_window_size
 
 from functools import  lru_cache
 def compute_mask(D, H, W, window_size, shift_size):
-
+    # print(D, H, W, window_size, shift_size)
     img_mask = np.zeros((1, D, H, W, 1)) 
 
- 
     cnt = 0
 
     for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0],None):
@@ -38,7 +37,6 @@ def compute_mask(D, H, W, window_size, shift_size):
 
     attn_mask = tf.where(attn_mask != 0, -100.0, attn_mask)
     attn_mask = tf.where(attn_mask == 0, 0.0 , attn_mask)
-
     return attn_mask
 
 
@@ -63,7 +61,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0., drop_path=0.,
                  act_layer=tf.keras.activations.gelu, norm_layer=LayerNormalization, use_checkpoint=False):
         super().__init__()
-
+        # print("3d block", compute_mask_info)
         self.dim = dim
         self.num_heads = num_heads
         self.window_size = window_size
@@ -86,14 +84,15 @@ class SwinTransformerBlock3D(tf.keras.Model):
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
 
         # compute mask
+        
         B, C, D, H, W = self.compute_mask_info["shape_of_input"]
-        D = 4
+        
         mask_window_size, mask_shift_size = get_window_size((D,H,W), self.compute_mask_info["window_size"], self.compute_mask_info["shift_size"])  #### change
          
         Dp = int(tf.math.ceil(D/ mask_window_size[0])) * mask_window_size[0]
         Hp = int(tf.math.ceil(H / mask_window_size[1])) * mask_window_size[1]
         Wp = int(tf.math.ceil(W / mask_window_size[2])) * mask_window_size[2]
-        
+        # print("attn")
         self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size)
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
@@ -106,8 +105,6 @@ class SwinTransformerBlock3D(tf.keras.Model):
         B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
         
         b, c, d, h ,w = self.compute_mask_info['shape_of_input']
-        d = 4       #### change
-        
 
         window_size, shift_size = get_window_size((d, h, w), self.window_size, self.shift_size)
         x = self.norm1(x)
@@ -132,12 +129,15 @@ class SwinTransformerBlock3D(tf.keras.Model):
 
         # cyclic shift
         if any(i > 0 for i in shift_size):
-            shifted_x = tf.roll(x, shift=[-self.shift_size[0], -self.shift_size[1], -self.shift_size[2]], axis=[1, 2, 3]) #?
+            # shifted_x = tf.roll(x, shift=[-self.shift_size[0], -self.shift_size[1], -self.shift_size[2]], axis=[1, 2, 3]) #?
+            shifted_x = tf.roll(x, shift=[-shift_size[0], -shift_size[1], -shift_size[2]], axis=[1, 2, 3]) #?
+           
             attn_mask = self.attn_mask
+            # print("block3d attn", attn_mask.shape)
+
         else:
             shifted_x = x
             attn_mask = None
-
         # partition windows
         x_windows = window_partition(shifted_x, window_size)  # B*nW, Wd*Wh*Ww, C
 
@@ -150,7 +150,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
 
         # reverse cyclic shift
         if any(i > 0 for i in shift_size):
-            x = tf.roll(shifted_x, shift=[self.shift_size[0], self.shift_size[1], self.shift_size[2]], axis=[1, 2, 3]) #?
+            x = tf.roll(shifted_x, shift=[shift_size[0], shift_size[1], shift_size[2]], axis=[1, 2, 3]) #?
         else:
             x = shifted_x
 
@@ -168,7 +168,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
             x: Input feature, tensor size (B, D, H, W, C).
             mask_matrix: Attention mask for cyclic shift.
         """
-
+        # print("block 3d", x.shape)
         shortcut = x
         x = self.forward_part1(x)
 

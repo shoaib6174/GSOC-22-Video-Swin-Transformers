@@ -10,7 +10,7 @@ from .PatchEmbed3D import PatchEmbed3D
 from tensorflow.keras.layers import  Conv3D
 
 class SwinTransformer3D(tf.keras.Model):
-    def __init__(self, shape_of_input = (2, 8, 224,224,3), pretrained=None,
+    def __init__(self, shape_of_input = (2, 32, 224,224,3), pretrained=None,
                  pretrained2d=True,
                  patch_size=(4,4,4),
                  in_chans=3,
@@ -31,6 +31,8 @@ class SwinTransformer3D(tf.keras.Model):
                  isTest =False):    ## ****** remove it later
       
         super().__init__()
+
+        print("shape_of_input: ", shape_of_input)
 
         self.pretrained = pretrained
         self.pretrained2d = pretrained2d
@@ -57,7 +59,7 @@ class SwinTransformer3D(tf.keras.Model):
         dpr = [x for x in np.linspace(0., drop_path_rate, sum(depths))] # stochastic depth decay rule
 
         # build layers
-        self.shape_of_input[2] = int(self.shape_of_input[1] / 4)
+        self.shape_of_input[2] = int(self.shape_of_input[1] / 2)
         self.layers3D = []
 
         for i_layer in range(self.num_layers):

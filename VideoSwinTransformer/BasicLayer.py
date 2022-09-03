@@ -46,8 +46,8 @@ class BasicLayer(tf.keras.Model):
                  downsample=None,
                  use_checkpoint=False):
         super().__init__()
-
-
+        # print("\n baisc Layer", dim, shape_of_input, depth, num_heads, window_size, mlp_ratio, qkv_bias, qk_scale, drop, attn_drop, drop_path, norm_layer,downsample)
+        # print(dim ,shape_of_input,)
         self.window_size = window_size
         self.shift_size = tuple(i // 2 for i in window_size)
         self.depth = depth
@@ -88,7 +88,7 @@ class BasicLayer(tf.keras.Model):
         Args:
             x: Input feature, tensor size (B, C, D, H, W).
         """
-
+        # print("\n\n basic layer call",x.shape)
         # calculate attention mask for SW-MSA
         B, C, D, H, W = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
 
