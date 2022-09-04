@@ -23,10 +23,8 @@ if __name__ == "__main__":
 
    #print(numpy.version)
    input_shape = (2,3, 32,224, 224)
-   x = tf.keras.Input((8,224,224,3))
    swin = SwinTransformer3D(shape_of_input = input_shape)
    x = tf.random.normal(input_shape,   dtype="float32")
-   # swin = SwinTransformer3D(x)
    x  = tf.keras.layers.Input(tensor=x)
 
    output = swin(x, training= False)
