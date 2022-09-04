@@ -13,32 +13,6 @@ from .window_reverse import window_reverse
 from .get_window_size import get_window_size
 
 
-from functools import  lru_cache
-def compute_mask(D, H, W, window_size, shift_size):
-    # print(D, H, W, window_size, shift_size)
-    img_mask = np.zeros((1, D, H, W, 1)) 
-
-    cnt = 0
-
-    for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0],None):
-        for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1],None):
-            for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2],None):
-                img_mask[:, d, h, w, :] = cnt
-                cnt = cnt + 1
-    img_mask = tf.convert_to_tensor(img_mask, dtype="float32")
-
-    mask_windows = window_partition(img_mask, window_size)  # nW, ws[0]*ws[1]*ws[2], 1
-
-    mask_windows = tf.squeeze(mask_windows, axis = -1)  # nW, ws[0]*ws[1]*ws[2] ??
-    attn_mask = tf.expand_dims(mask_windows, axis=1) - tf.expand_dims(mask_windows, axis=2)
-    
-
-    attn_mask = tf.cast(attn_mask, dtype="float64")
-
-    attn_mask = tf.where(attn_mask != 0, -100.0, attn_mask)
-    attn_mask = tf.where(attn_mask == 0, 0.0 , attn_mask)
-    return attn_mask
-
 
 class SwinTransformerBlock3D(tf.keras.Model):
     """ Swin Transformer Block.
@@ -83,24 +57,14 @@ class SwinTransformerBlock3D(tf.keras.Model):
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
 
-        # compute mask
         
-        B, C, D, H, W = self.compute_mask_info["shape_of_input"]
         
-        mask_window_size, mask_shift_size = get_window_size((D,H,W), self.compute_mask_info["window_size"], self.compute_mask_info["shift_size"])  #### change
-         
-        Dp = int(tf.math.ceil(D/ mask_window_size[0])) * mask_window_size[0]
-        Hp = int(tf.math.ceil(H / mask_window_size[1])) * mask_window_size[1]
-        Wp = int(tf.math.ceil(W / mask_window_size[2])) * mask_window_size[2]
-        # print("attn")
-        self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size)
-
         self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = mlp_block(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
 
-    def forward_part1(self, x):
+    def forward_part1(self, x , attn_mask):
         
         B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
         
@@ -132,7 +96,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
             # shifted_x = tf.roll(x, shift=[-self.shift_size[0], -self.shift_size[1], -self.shift_size[2]], axis=[1, 2, 3]) #?
             shifted_x = tf.roll(x, shift=[-shift_size[0], -shift_size[1], -shift_size[2]], axis=[1, 2, 3]) #?
            
-            attn_mask = self.attn_mask
+            attn_mask = attn_mask
             # print("block3d attn", attn_mask.shape)
 
         else:
@@ -162,7 +126,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         x = self.mlp(self.norm2(x))
         return self.drop_path(x)
 
-    def call(self, x):
+    def call(self, x, attn_mask):
         """ Forward function.
         Args:
             x: Input feature, tensor size (B, D, H, W, C).
@@ -170,7 +134,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         """
         # print("block 3d", x.shape)
         shortcut = x
-        x = self.forward_part1(x)
+        x = self.forward_part1(x, attn_mask)
 
         x = shortcut + self.drop_path(x)
 
