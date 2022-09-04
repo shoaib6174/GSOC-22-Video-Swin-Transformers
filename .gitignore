@@ -5,3 +5,6 @@ weights/
 swin_tiny_patch244_window877_kinetics400_1k_tf.pth
 swin_tiny_patch244_window877_kinetics400_1k_tf.pth/
 swin_tiny_patch244_window877_kinetics400_1k_tf/
+
+swin_base_patch244_window877_kinetics400_1k.pth
+swin_base_patch244_window1677_sthv2.pth
