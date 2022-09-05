@@ -99,19 +99,7 @@ class SwinTransformer3D(tf.keras.Model):
          # add a norm layer for each output
         self.norm = norm_layer(epsilon=1e-5)
 
-        self._freeze_stages()
 
-    def _freeze_stages(self):
-        if self.frozen_stages >= 0:
-            self.patch_embed.eval()
-            self.patch_embed.trainable = False
-
-        if self.frozen_stages >= 1:
-            self.pos_drop.eval()
-            for i in range(0, self.frozen_stages):
-                m = self.layers3D[i]
-                m.eval()
-                m.trainable = False
 
 
 
@@ -119,22 +107,22 @@ class SwinTransformer3D(tf.keras.Model):
         x = self.projection(x)
 
         layer_out = {}
-        layer_out["PatchEmbed"] = x
+        # layer_out["PatchEmbed"] = x
         
         x = self.pos_drop(x)
-        layer_out["drop_out"] = x
+        # layer_out["drop_out"] = x
 
-        i = 1
+        # i = 1
         for layer in self.layers3D:
             x = layer(x)
-            layer_out[f"basic layer{i}"] = x
-            i +=1
+            # layer_out[f"basic layer{i}"] = x
+            # i +=1
 
         x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
         x = self.norm(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
         
-        layer_out["Final Output"] = x
+        # layer_out["Final Output"] = x
 
         if self.isTest:                 # remove later
             return layer_out, x
