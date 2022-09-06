@@ -133,8 +133,7 @@ class BasicLayer(tf.keras.Model):
 
         for blk in self.blocks:
             x = blk(x, self.attn_mask)
-
-        x = tf.reshape(x, [B, D, H, W, -1])
+        # x = tf.reshape(x, [B, D, H, W, -1])           # it doesn't change the shape and gives erroe if Input is passed 
 
         if self.downsample is not None:
             x = self.downsample(x)

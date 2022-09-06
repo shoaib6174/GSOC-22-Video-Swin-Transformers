@@ -27,7 +27,6 @@ class PatchMerging(tf.keras.layers.Layer):
         x3 = x[:, :, 1::2, 1::2, :]  # B D H/2 W/2 C
 
         x = tf.concat([x0, x1, x2, x3], axis=-1) # B D H/2 W/2 4*C
-
         x = self.norm(x)
         x = self.reduction(x)
         

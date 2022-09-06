@@ -57,9 +57,9 @@ class SwinTransformerBlock3D(tf.keras.Model):
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
 
+        batch_size = self.compute_mask_info['shape_of_input'][0]
         
-        
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else tf.identity
+        self.drop_path = DropPath(batch_size, drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = mlp_block(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
