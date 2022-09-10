@@ -246,9 +246,9 @@ def main(args):
     # dummy_x = torch.rand(1, 3, 8, 224, 224)
     # logits = pt_model(dummy_x)
     # #print(logits.shape)
-
-    input = tf.random.normal((1,3, 8, 224,224), dtype='float64')
-    tf_model = SwinTransformer3D(**cfg)
+    shape_of_input = (1,3,32,224,224)
+    input = tf.random.normal(shape_of_input, dtype='float64')
+    tf_model = SwinTransformer3D(**cfg, shape_of_input=shape_of_input)
 
     tf_model.compile()  # delete
 
