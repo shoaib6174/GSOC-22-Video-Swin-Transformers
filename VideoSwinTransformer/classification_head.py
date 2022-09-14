@@ -82,4 +82,6 @@ class I3DHead_tf(tf.keras.Model):
         cls_score = self.fc_cls(x)
         # print(cls_score)
         # [N, num_classes]
+
+        # cls_score = tf.reshape(cls_score, [-1]) #test
         return cls_score
