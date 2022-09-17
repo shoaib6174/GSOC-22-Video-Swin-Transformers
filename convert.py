@@ -222,7 +222,7 @@ def main(args):
 
     # command = f"wget {link} -O {name}.pth"
     # os.system(command)
-    # #print("downloaded")
+    # print("downloaded--------------- ", command)
 
     if not os.path.exists(f"{name}.pth"):
         download_weight_command = f"wget {link} -O {name}.pth"
