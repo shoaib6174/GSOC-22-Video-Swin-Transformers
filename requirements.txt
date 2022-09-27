@@ -1,4 +1,4 @@
-tensorflow >=2.7.0
+tensorflow ==2.8.2
 mmcv==1.6.1
 einops ==0.4.1
 timm==0.6.7
