@@ -48,8 +48,8 @@ class Config:
     patch_size = attr.ib(type=int)
     window_size = attr.ib(type=int)
     dataset = attr.ib(type=str)
-    fine_tune_dataset = attr.ib(type=str)
     pre_train_dataset = attr.ib(type=str)
+    fine_tune_dataset = attr.ib(type=str)
 
     type = attr.ib(type=str, default="swin")
 
