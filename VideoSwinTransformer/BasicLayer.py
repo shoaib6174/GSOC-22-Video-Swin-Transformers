@@ -84,7 +84,7 @@ class BasicLayer(tf.keras.Model):
         }
 
 
-        B, C, D, H, W = self.compute_mask_info["shape_of_input"]
+        C, D, H, W = self.compute_mask_info["shape_of_input"]
         
         mask_window_size, mask_shift_size = get_window_size((D,H,W), self.compute_mask_info["window_size"], self.compute_mask_info["shift_size"])  #### change
          

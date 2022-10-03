@@ -12,7 +12,7 @@ class PatchMerging(tf.keras.layers.Layer):
 
     def call(self, x):
         
-        _,_, _, H, W= self.shape_of_input
+        _, _, H, W= self.shape_of_input
 
 
         # padding

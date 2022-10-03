@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
             "-s",
             "--shape_of_input",
-            default=[1,3,32,224,224],
+            default=[3,32,224,224],
             nargs='+',
             type=int,
             help="Enter Shape of input. Default: (1,3,32,224,224)",
@@ -227,8 +227,8 @@ def main(cfg, shape_of_input):
             new_state_dict[name] = v 
 
     pt_model.load_state_dict(new_state_dict) 
-
-    input = tf.random.normal(shape_of_input, dtype='float64')
+    input_shape = [1, *shape_of_input]
+    input = tf.random.normal([1,3,32,224,224], dtype='float64')
     tf_model = SwinTransformer3D(**config, shape_of_input=shape_of_input)
 
 

@@ -56,7 +56,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
             dim, window_size=self.window_size, num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
 
-        batch_size = self.compute_mask_info['shape_of_input'][0]
+        batch_size = 1
         
         self.drop_path = DropPath(batch_size, drop_path) if drop_path > 0. else tf.identity
         self.norm2 = norm_layer(epsilon=1e-5)
@@ -67,7 +67,7 @@ class SwinTransformerBlock3D(tf.keras.Model):
         
         B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
         
-        b, c, d, h ,w = self.compute_mask_info['shape_of_input']
+        c, d, h ,w = self.compute_mask_info['shape_of_input']
 
         window_size, shift_size = get_window_size((d, h, w), self.window_size, self.shift_size)
         x = self.norm1(x)

@@ -54,9 +54,9 @@ class I3DHead_tf(tf.keras.Model):
     def call(self, x):
         """Defines the computation performed at every call.
         Args:
-            x (torch.Tensor): The input data.
+            x (tf.Tensor): The input data.
         Returns:
-            torch.Tensor: The classification scores for input samples.
+            tf.Tensor: The classification scores for input samples.
         """
         # [N, in_channels, 4, 7, 7]
 
