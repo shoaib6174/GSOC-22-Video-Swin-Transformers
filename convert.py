@@ -27,11 +27,20 @@ def parse_args():
     parser.add_argument(
         "-m",
         "--model-name",
-        default="swin_tiny_patch4_window7_224",
+        default="swin_tiny_patch244_window877_kinetics400_1k",
         type=str,
         choices=model_configs.MODEL_MAP.keys(),
         help="Name of the Swin model variant.",
     )
+  
+    parser.add_argument(
+            "-s",
+            "--shape_of_input",
+            default=[1,3,32,224,224],
+            nargs='+',
+            type=int,
+            help="Enter Shape of input. Default: (1,3,32,224,224)",
+        )
 
     return parser.parse_args()
 
@@ -186,10 +195,10 @@ def modify_swin_blocks(np_state_dict, pt_weights_prefix, tf_block):
   return tf_block
 
 
-def main(args):
+    
+def main(cfg, shape_of_input):
 
-    cfg_method = model_configs.MODEL_MAP[args.model_name]
-    cfg = cfg_method()
+    
 
     name = cfg["name"]
     link = cfg['link']
@@ -219,13 +228,12 @@ def main(args):
 
     pt_model.load_state_dict(new_state_dict) 
 
-    shape_of_input = (1,3,32,224,224)
     input = tf.random.normal(shape_of_input, dtype='float64')
     tf_model = SwinTransformer3D(**config, shape_of_input=shape_of_input)
 
 
     _ =  tf_model(input)
-
+    tf_model.compile()
 
     # Load the PT params.
     np_state_dict = pt_model.state_dict()
@@ -269,4 +277,8 @@ def main(args):
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args)
+    cfg_method = model_configs.MODEL_MAP[args.model_name]
+    cfg = cfg_method()
+
+    main(cfg, args.shape_of_input)
+    

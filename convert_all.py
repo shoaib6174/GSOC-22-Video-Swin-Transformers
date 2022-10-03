@@ -11,8 +11,6 @@ def main():
         
         
         command = f"python convert.py -m {model_name}"
-
-        print(command)
         os.system(command)
         
         break 
