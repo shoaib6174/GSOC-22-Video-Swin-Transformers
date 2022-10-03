@@ -266,7 +266,7 @@ def main(cfg, shape_of_input):
                             f"layers.{i-2}",
                             tf_model.layers[i].layers)
     
-    save_path = os.path.join(os.getcwd(), f"{args.model_name}_tf")
+    save_path = os.path.join(os.getcwd(),"tf_models", f"{args.model_name}_tf")
 
     
     print("Saving TF model to", save_path)
