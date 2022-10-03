@@ -13,7 +13,6 @@ from .window_partition import window_partition
 from functools import  lru_cache
 
 def compute_mask(D, H, W, window_size, shift_size):
-    # print(D, H, W, window_size, shift_size)
     img_mask = np.zeros((1, D, H, W, 1)) 
 
     cnt = 0
@@ -72,8 +71,6 @@ class BasicLayer(tf.keras.Model):
                  downsample=None,
                  use_checkpoint=False):
         super().__init__()
-        # print("\n baisc Layer", dim, shape_of_input, depth, num_heads, window_size, mlp_ratio, qkv_bias, qk_scale, drop, attn_drop, drop_path, norm_layer,downsample)
-        # print(dim ,shape_of_input,)
         self.window_size = window_size
         self.shift_size = tuple(i // 2 for i in window_size)
         self.depth = depth
@@ -94,7 +91,6 @@ class BasicLayer(tf.keras.Model):
         Dp = int(tf.math.ceil(D/ mask_window_size[0])) * mask_window_size[0]
         Hp = int(tf.math.ceil(H / mask_window_size[1])) * mask_window_size[1]
         Wp = int(tf.math.ceil(W / mask_window_size[2])) * mask_window_size[2]
-        # print("attn")
         self.attn_mask = compute_mask(Dp, Hp, Wp, mask_window_size, mask_shift_size)
 
         # build 
@@ -125,7 +121,6 @@ class BasicLayer(tf.keras.Model):
         Args:
             x: Input feature, tensor size (B, C, D, H, W).
         """
-        # print("\n\n basic layer call",x.shape)
         # calculate attention mask for SW-MSA
         B, C, D, H, W = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
 
@@ -133,7 +128,6 @@ class BasicLayer(tf.keras.Model):
 
         for blk in self.blocks:
             x = blk(x, self.attn_mask)
-        # x = tf.reshape(x, [B, D, H, W, -1])           # it doesn't change the shape and gives erroe if Input is passed 
 
         if self.downsample is not None:
             x = self.downsample(x)

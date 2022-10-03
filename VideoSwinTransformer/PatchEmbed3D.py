@@ -26,7 +26,6 @@ class PatchEmbed3D(tf.keras.Model):
 
         
         if self.norm is not None:
-          # print("patch embed", x.shape)
           B, C, D, Wh, Ww = x.shape
 
           x  = tf.reshape(x, shape=[-1, C, D*Wh*Ww]) ### **** change

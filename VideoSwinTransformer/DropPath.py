@@ -8,10 +8,7 @@ def drop_path(inputs, drop_prob,batch_size, is_training):
     keep_prob = 1.0 - drop_prob
     # Compute drop_connect tensor
     random_tensor = keep_prob
-    # shape = (inputs.shape[0],) + (1,) * 4
     shape = (batch_size,)+(1,)*(tf.shape(inputs).shape[0]-1)
-    # shape=(5,1,1,1,1)
-    # print("drop path shape" , shape)
 
     random_tensor += tf.random.uniform(shape, dtype=inputs.dtype)
     binary_tensor = tf.floor(random_tensor)

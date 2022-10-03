@@ -11,7 +11,6 @@ class PatchMerging(tf.keras.layers.Layer):
         
 
     def call(self, x):
-        # B, D, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2] , tf.shape(x)[3] , tf.shape(x)[4] 
         
         _,_, _, H, W= self.shape_of_input
 

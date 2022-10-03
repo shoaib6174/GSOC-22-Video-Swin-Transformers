@@ -32,7 +32,6 @@ class SwinTransformer3D(tf.keras.Model):
       
         super().__init__()
 
-        print("shape_of_input: ", shape_of_input)
 
         self.pretrained = pretrained
         self.pretrained2d = pretrained2d
@@ -57,8 +56,6 @@ class SwinTransformer3D(tf.keras.Model):
 
          # stochastic depth
         dpr = [x for x in np.linspace(0., drop_path_rate, sum(depths))] # stochastic depth decay rule
-# (2, 32, 224,224,3)
-# (2, 3,32, 224,224)
 
         # build layers
         self.shape_of_input[2] = int(self.shape_of_input[2] / 2)
@@ -107,22 +104,16 @@ class SwinTransformer3D(tf.keras.Model):
         x = self.projection(x)
 
         layer_out = {}
-        # layer_out["PatchEmbed"] = x
         
         x = self.pos_drop(x)
-        # layer_out["drop_out"] = x
 
-        # i = 1
         for layer in self.layers3D:
             x = layer(x)
-            # layer_out[f"basic layer{i}"] = x
-            # i +=1
 
         x = tf.transpose(x, perm=[0, 2,3,4, 1 ])
         x = self.norm(x)
         x = tf.transpose(x, perm=[0, 4, 1, 2,3 ])
         
-        # layer_out["Final Output"] = x
 
         if self.isTest:                 # remove later
             return layer_out, x
@@ -133,7 +124,3 @@ class SwinTransformer3D(tf.keras.Model):
         x = tf.keras.Input(shape=(3,8,224,224))
         return tf.keras.Model(inputs=[x], outputs=self.call(x))
 
-    # def train(self, mode=True):
-    #     """Convert the model into training mode while keep layers freezed."""
-    #     super(SwinTransformer3D, self).train(mode)
-    #     self._freeze_stages()

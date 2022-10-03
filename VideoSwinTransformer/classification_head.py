@@ -59,29 +59,23 @@ class I3DHead_tf(tf.keras.Model):
             torch.Tensor: The classification scores for input samples.
         """
         # [N, in_channels, 4, 7, 7]
-        # print(x[:1,:1,:1,:1,:10])
 
         if self.avg_pool is not None:
             x = tf.transpose(x, perm=(0,2,3,4,1))
 
             x = self.avg_pool(x)
-            # x = tf.transpose(x, perm=(0,4,1,2,3))
 
-            # print("pool",x.shape)
 
         # [N, in_channels, 1, 1, 1]
-
 
         if self.dropout is not None:
             x = self.dropout(x)
         # [N, in_channels, 1, 1, 1]
         B, C, D, H, W = x.shape
-        # print("before reshape",x.shape)
+
         x = tf.reshape(x, [-1,C*D*H*W])
         # [N, in_channels]
         cls_score = self.fc_cls(x)
-        # print(cls_score)
         # [N, num_classes]
 
-        # cls_score = tf.reshape(cls_score, [-1]) #test
         return cls_score

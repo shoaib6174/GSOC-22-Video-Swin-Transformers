@@ -35,7 +35,6 @@ class SwinTransformerBlock3D(tf.keras.Model):
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0., drop_path=0.,
                  act_layer=tf.keras.activations.gelu, norm_layer=LayerNormalization, use_checkpoint=False):
         super().__init__()
-        # print("3d block", compute_mask_info)
         self.dim = dim
         self.num_heads = num_heads
         self.window_size = window_size
@@ -93,11 +92,9 @@ class SwinTransformerBlock3D(tf.keras.Model):
 
         # cyclic shift
         if any(i > 0 for i in shift_size):
-            # shifted_x = tf.roll(x, shift=[-self.shift_size[0], -self.shift_size[1], -self.shift_size[2]], axis=[1, 2, 3]) #?
             shifted_x = tf.roll(x, shift=[-shift_size[0], -shift_size[1], -shift_size[2]], axis=[1, 2, 3]) #?
            
             attn_mask = attn_mask
-            # print("block3d attn", attn_mask.shape)
 
         else:
             shifted_x = x
@@ -132,7 +129,6 @@ class SwinTransformerBlock3D(tf.keras.Model):
             x: Input feature, tensor size (B, D, H, W, C).
             mask_matrix: Attention mask for cyclic shift.
         """
-        # print("block 3d", x.shape)
         shortcut = x
         x = self.forward_part1(x, attn_mask)
 
