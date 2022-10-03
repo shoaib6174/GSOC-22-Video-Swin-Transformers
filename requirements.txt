@@ -10,4 +10,4 @@ wget
 
 pillow==9.2.0
 mmaction2
-
+attrs
