@@ -15,3 +15,5 @@ from .classification_head import I3DHead_tf
 
 from .SwinTransformer3D_pt import SwinTransformer3D_pt
 from .SwinTransformer3D import SwinTransformer3D
+
+from .CosineAnnealingWithWarmupSchedule import CosineAnnealingWithWarmupSchedule
