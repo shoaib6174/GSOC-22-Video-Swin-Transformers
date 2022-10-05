@@ -13,7 +13,7 @@ You can find the final report of the project [here](https://github.com/shoaib617
 
 ## Outcomes
 
-* A [collection](https://tfhub.dev/) of featur-extractor from `Video Swin Transformer` models on `TensorFlow Hub`
+* A [collection](https://tfhub.dev/) of feature-extractor from `Video Swin Transformer` models on `TensorFlow Hub`
 * A [notebook]() for converting `PyTorch` weights to `TensorFlow 2` model for your desired input shape
 * Custom `LearningRateSchedule` for [Cosine Decay with WarmUp]()
 * A [notebook]() for fine-tuning the  `Video Swin Transformer` backbones using single-gpu after adding `I3D` video classification model as head
