@@ -31,7 +31,7 @@ providing the path to the downloaded model folder.
 ## References
 [1] [Video Swin TransformerZe et al.](https://arxiv.org/abs/2106.13230)
 [2] [Video Swin Transformers GitHub](https://github.com/SwinTransformer/Video-Swin-Transformerr)
-[3] [Swin-TF GitHub](https://github.com/shoaib6174/GSOC-22-Video-Swin-Transformers)
+[3] [GSOC-22-Video-Swin-Transformers GitHub](https://github.com/shoaib6174/GSOC-22-Video-Swin-Transformers)
 
 ## Acknowledgements
 * [Google Summer of Code 2022](https://summerofcode.withgoogle.com/)
