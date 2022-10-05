@@ -1,4 +1,8 @@
-# GSOC-22-Video-Swin-Transformers
+<p align="center">
+<img align="center" src="https://user-images.githubusercontent.com/40586752/194027673-302bce07-e1c9-487c-9d0b-bcb43e35dea2.png">
+</p>
+
+# Video Swin Transformers
 
 This summer I participated in [Google Summer of Code 2022](https://summerofcode.withgoogle.com/) as a contributor, and my mentors were   [Luiz GUStavo Martins](https://www.linkedin.com/in/luiz-gustavo-martins-64ab5891/) and  [Sayak Paul](https://www.linkedin.com/in/sayak-paul/).
 
