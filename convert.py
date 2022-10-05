@@ -233,7 +233,7 @@ def main(cfg, shape_of_input):
 
 
     _ =  tf_model(input)
-    tf_model.compile()
+    # tf_model.compile()
 
     # Load the PT params.
     np_state_dict = pt_model.state_dict()
