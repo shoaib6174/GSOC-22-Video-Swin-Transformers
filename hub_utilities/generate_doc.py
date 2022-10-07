@@ -16,7 +16,7 @@ Fine-tunable Video Swin Transformer model pre-trained on the $PRE_TRAIN_DATASET 
 <!-- format: saved_model_2 -->
 <!-- fine-tunable: true -->
 <!-- license: mit -->
-<!-- colab: https://colab.research.google.com/drive/1McH0gP3UeD_fEMl4MyGM1vbLOFAS-3Vj -->
+<!-- colab: https://colab.research.google.com/drive/1G05XzCNccm9XtMGvYjaeUIliq-z0-Ect -->
 ## Overview
 This model is a Video Swin Transformer [1] pre-trained on the $PRE_TRAIN_DATASET dataset and was then fine-tuned on $FINE_TUNE_DATASET dataset. You can find the complete
 collection of Swin models on TF-Hub on [this page](https://tfhub.dev/shoaib6174/collections/video-swin).
@@ -104,7 +104,7 @@ for c in [
     print(c)
 
     save_path = os.path.join(
-         "hub_utilities/tfhub.dev", c.rel_doc_file_path()
+         "./tfhub.dev", c.rel_doc_file_path()
     )
     model_folder = save_path.split("/")[-2]
     model_abs_path = "/".join(save_path.split("/")[:-1])
