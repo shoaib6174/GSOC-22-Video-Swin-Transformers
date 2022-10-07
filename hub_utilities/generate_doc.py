@@ -104,7 +104,7 @@ for c in [
     print(c)
 
     save_path = os.path.join(
-         "./tfhub.dev", c.rel_doc_file_path()
+         "hub_utilities/tfhub.dev", c.rel_doc_file_path()
     )
     model_folder = save_path.split("/")[-2]
     model_abs_path = "/".join(save_path.split("/")[:-1])
