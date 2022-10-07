@@ -6,12 +6,15 @@
 * Convert the pre-trained `PyTorch` weights to `TensorFlow` models and publish them to `TensorFlow Hub`
 * Add classification head on top of the backbone model and fine-tune on `UCF101` dataset 
 
+## Overview
+The main goal of this project was to make `Video Swin Transformer` availabe in `TensorFlow Hub`. **Video Swin Transformer** was initially described in ["Video Swin Transformer"](https://arxiv.org/abs/2106.13230), which advocates an inductive bias of locality in video Transformers, leading to a better speed-accuracy trade-off compared to previous approaches which compute self-attention globally even with spatial-temporal factorization.  This approach achieved state-of-the-art accuracy on a broad range of video recognition benchmarks, including action recognition (`84.9` top-1 accuracy on Kinetics-400 and `86.1` top-1 accuracy on Kinetics-600 with `~20x` less pre-training data and `~3x` smaller model size) and temporal modeling (`69.6` top-1 accuracy on Something-Something v2). In this project, I have created a collection of `Video Swin Transformer` backbone models for `video feature extraction` and published it to `TensorFlow Hub` and provided a colab notebook demontrating  fine-tuning after adding `I3D` video classification model as head.
+
 ## Milestone Achieved
 
 * Implemented `Video Swin Transformer` model in TF2
 * Converted `PyTorch` weights to `TensorFlow` models
 * Implemented Cosine Decay with Warmup as custom `LearningRateSchedule` 
-* Prepared training/fine-tuning scripts for `UCF101` dataset on single-gpu
+* Demostrated fine-tuning
 
 
 ## Work-in-Progress
@@ -22,7 +25,7 @@ Now, I am trying to figure out how to solve this issue.
 ## Outcomes
 
 * A [collection](https://tfhub.dev/shoaib6174) of feature-extractor from `Video Swin Transformer` models on `TensorFlow Hub`
-* [Fine-tuning Video Swin Transformer with Dummy Inputs](https://colab.research.google.com/drive/1G05XzCNccm9XtMGvYjaeUIliq-z0-Ect) notebook for fine-tuning the  `Video Swin Transformer` backbones using single-gpu after adding `I3D` video classification model as head
+* [Fine-tuning Video Swin Transformer with Dummy Inputs](https://colab.research.google.com/drive/1G05XzCNccm9XtMGvYjaeUIliq-z0-Ect) notebook for fine-tuning the  `Video Swin Transformer` backbones after adding `I3D` video classification model as head
 * A [notebook](https://colab.research.google.com/drive/1sZIM7_OV1__CFV-WSQguOOZ8VyOsDaGM) for converting `PyTorch` weights to `TensorFlow 2` model for your desired `input shape`
 * Custom `LearningRateSchedule` for [Cosine Decay with WarmUp]()
 
