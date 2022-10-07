@@ -19,6 +19,12 @@ In fine-tuning, the size of each video is [32,3,224,224] ([frames, channels, hei
 
 Now, I am trying to figure out how to solve this issue.
 
+## Outcomes
+
+* A [collection](https://tfhub.dev/shoaib6174) of feature-extractor from `Video Swin Transformer` models on `TensorFlow Hub`
+* [Fine-tuning Video Swin Transformer with Dummy Inputs](https://colab.research.google.com/drive/1G05XzCNccm9XtMGvYjaeUIliq-z0-Ect) notebook for fine-tuning the  `Video Swin Transformer` backbones using single-gpu after adding `I3D` video classification model as head
+* A [notebook](https://colab.research.google.com/drive/1sZIM7_OV1__CFV-WSQguOOZ8VyOsDaGM) for converting `PyTorch` weights to `TensorFlow 2` model for your desired `input shape`
+* Custom `LearningRateSchedule` for [Cosine Decay with WarmUp]()
 
 ## Acknowledgement 
 
