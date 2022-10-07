@@ -43,7 +43,7 @@ print(output.shape)
 
 
 ## Notes
-* The input shape for this model is [None, 3, 32, 224, 224] representing [batch_size, channels, frames, height, width]. To create models with different input shape use [this notebook](https://colab.research.google.com/drive/1sZIM7_OV1__CFV-WSQguOOZ8VyOsDaGM).
+* The input shape for this model is `[None, 3, 32, 224, 224]` representing `[batch_size, channels, frames, height, width]`. To create models with different input shape use [this notebook](https://colab.research.google.com/drive/1sZIM7_OV1__CFV-WSQguOOZ8VyOsDaGM).
 
 * The original model weights are provided from [2]. They were ported to Keras models
 (`tf.keras.Model`) and then serialized as TensorFlow SavedModels. The porting
