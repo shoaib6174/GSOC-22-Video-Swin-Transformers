@@ -43,12 +43,16 @@ print(output.shape)
 
 
 ## Notes
+* The input shape for this model is [None, 3, 32, 224, 224] representing [batch_size, channels, frames, height, width]. To create models with different input shape use [this notebook](https://colab.research.google.com/drive/1sZIM7_OV1__CFV-WSQguOOZ8VyOsDaGM).
+
 * The original model weights are provided from [2]. They were ported to Keras models
 (`tf.keras.Model`) and then serialized as TensorFlow SavedModels. The porting
 steps are available in [3].
 * The model can be unrolled into a standard Keras model and you can inspect its topology.
 To do so, first download the model from TF-Hub and then load it using `tf.keras.models.load_model`
 providing the path to the downloaded model folder.
+
+
 ## References
 [1] [Video Swin TransformerZe et al.](https://arxiv.org/abs/2106.13230)
 [2] [Video Swin Transformers GitHub](https://github.com/SwinTransformer/Video-Swin-Transformerr)
