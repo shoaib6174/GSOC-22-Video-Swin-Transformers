@@ -44,8 +44,6 @@ class SwinTransformer3D(tf.keras.Model):
         self.mlp_ratio = mlp_ratio
         self.shape_of_input = list(shape_of_input)
 
-        self.isTest = isTest ## remove later
-
         self.projection = PatchEmbed3D(patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
                             norm_layer= norm_layer if self.patch_norm else None) ## ***** make is patchembed and change the conver function
        
