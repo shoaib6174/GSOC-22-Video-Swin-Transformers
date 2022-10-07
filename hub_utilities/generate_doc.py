@@ -97,7 +97,7 @@ for c in [
     Config("base", 244, 1677, "sthv2", "Kinetics 400", "Something-Something V2"),
     Config("base", 244, 877, "kinetics400_1k", "ImageNet-1K", "Kinetics 400(1k)"),
     Config("base", 244, 877, "kinetics400_22k", "ImageNet-22K", "Kinetics 400(22k)"),
-    Config("base", 244, 877, "kinetics600_1k", "ImageNet-22K", "Kinetics 600(1k)")]:
+    Config("base", 244, 877, "kinetics600_22k", "ImageNet-22K", "Kinetics 600(1k)")]:
     
     pre_train_dataset = c.dataset
 
