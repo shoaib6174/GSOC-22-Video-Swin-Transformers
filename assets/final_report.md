@@ -1,13 +1,17 @@
 # Final Report
 
+## Overview
+
+The main goal of this project was to make `Video Swin Transformer` availabe in `TensorFlow Hub`. **Video Swin Transformer** was initially described in ["Video Swin Transformer"](https://arxiv.org/abs/2106.13230), which advocates an inductive bias of locality in video Transformers, leading to a better speed-accuracy trade-off compared to previous approaches which compute self-attention globally even with spatial-temporal factorization.  This approach achieved state-of-the-art accuracy on a broad range of video recognition benchmarks, including action recognition (`84.9` top-1 accuracy on Kinetics-400 and `86.1` top-1 accuracy on Kinetics-600 with `~20x` less pre-training data and `~3x` smaller model size) and temporal modeling (`69.6` top-1 accuracy on Something-Something v2). In this project, I have created a collection of `Video Swin Transformer` backbone models for `video feature extraction` and published it to `TensorFlow Hub` and provided a colab notebook demontrating  fine-tuning after adding `I3D` video classification model as head.
+
+
 ## Objectives
 
 * Implement  `Video Swin Transformer` in `TensorFlow`
 * Convert the pre-trained `PyTorch` weights to `TensorFlow` models and publish them to `TensorFlow Hub`
 * Add classification head on top of the backbone model and fine-tune on `UCF101` dataset 
 
-## Overview
-The main goal of this project was to make `Video Swin Transformer` availabe in `TensorFlow Hub`. **Video Swin Transformer** was initially described in ["Video Swin Transformer"](https://arxiv.org/abs/2106.13230), which advocates an inductive bias of locality in video Transformers, leading to a better speed-accuracy trade-off compared to previous approaches which compute self-attention globally even with spatial-temporal factorization.  This approach achieved state-of-the-art accuracy on a broad range of video recognition benchmarks, including action recognition (`84.9` top-1 accuracy on Kinetics-400 and `86.1` top-1 accuracy on Kinetics-600 with `~20x` less pre-training data and `~3x` smaller model size) and temporal modeling (`69.6` top-1 accuracy on Something-Something v2). In this project, I have created a collection of `Video Swin Transformer` backbone models for `video feature extraction` and published it to `TensorFlow Hub` and provided a colab notebook demontrating  fine-tuning after adding `I3D` video classification model as head.
+
 
 ## Milestone Achieved
 
@@ -34,7 +38,8 @@ Now, I am trying to figure out how to solve this issue.
 I would like to thank [Luiz GUStavo Martins](https://www.linkedin.com/in/luiz-gustavo-martins-64ab5891/) and  [Sayak Paul](https://www.linkedin.com/in/sayak-paul/) for their guidance and encouragements. Without their support, I couldn't have reached so far with the project. I would also like to thank [**Google Summer of Code**](https://summerofcode.withgoogle.com) and [**TensorFlow**](https://www.tensorflow.org) for giving me this opportunity.
 
 
-## Parting thoughts 
+## Parting thoughts
+
 This project was a great learning experience for me. I got to deep dive into PyTorch and TensorFlow with this project.
 
 In the middle of the project, after converting the PyTorch weights into TensorFlow models, the output of both models for same input weren't matching. My mentors guided me on de-bugging and encouraged me to keep trying. I was stuck with the issue for several weeks but finally I was able to find the issues and solve them. It taught me the importance of patience, persistance and support from the mentors. 
