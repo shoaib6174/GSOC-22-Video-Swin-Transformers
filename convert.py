@@ -228,12 +228,11 @@ def main(cfg, shape_of_input):
 
     pt_model.load_state_dict(new_state_dict) 
     input_shape = [1, *shape_of_input]
-    input = tf.random.normal(shape_of_input, dtype='float64')
+    input = tf.random.normal(input_shape, dtype='float64')
     tf_model = SwinTransformer3D(**config, shape_of_input=shape_of_input)
 
 
     _ =  tf_model(input)
-    # tf_model.compile()
 
     # Load the PT params.
     np_state_dict = pt_model.state_dict()
